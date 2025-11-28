@@ -1,8 +1,7 @@
 'use client'
-// این باید اولین خط باشه — همیشه!
 
 export const dynamic = 'force-dynamic'
-export const revalidate = 0
+// فقط این یک خط کافیه — revalidate رو حذف کردیم
 
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -40,7 +39,6 @@ export default function KanbanPage() {
   )
 
   useEffect(() => {
-    // اگر env نباشه (در build time) — چیزی نکن
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return
 
     const fetchTasks = async () => {
@@ -67,10 +65,7 @@ export default function KanbanPage() {
     const taskId = Number(active.id)
     const newStatus = over.id as keyof typeof columns
 
-    await supabase
-      .from('tasks')
-      .update({ status: newStatus } as any)
-      .eq('id', taskId)
+    await supabase.from('tasks').update({ status: newStatus } as any).eq('id', taskId)
   }
 
   return (
