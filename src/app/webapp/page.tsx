@@ -61,8 +61,25 @@ export default function TelegramWebAppPro() {
 
   const addTask = async () => {
     if (!newTask.trim()) return
-    await supabase.from('tasks').insert({ title: newTask, status: 'todo', priority: 'medium' })
-    setNewTask('')
+    try {
+      const response = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newTask,
+          telegramId: window.Telegram?.WebApp?.initData ? 0 : Math.floor(Math.random() * 1000000),
+        }),
+      })
+      if (response.ok) {
+        setNewTask('')
+        fetchTasks()
+      } else {
+        const error = await response.json()
+        console.error('Error adding task:', error)
+      }
+    } catch (error) {
+      console.error('Error adding task:', error)
+    }
   }
 
   const moveTask = async (id: number, status: string) => {
