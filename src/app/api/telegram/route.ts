@@ -26,7 +26,7 @@ async function getOrCreateUser(tgUser: User) {
         telegram_id: tgUser.id,
         username: tgUser.username,
         full_name: `${tgUser.first_name} ${tgUser.last_name || ''}`.trim()
-      })
+      } as any)
       .select()
       .single()
     profile = data
