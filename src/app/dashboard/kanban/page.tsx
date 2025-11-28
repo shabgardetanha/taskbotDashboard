@@ -1,9 +1,24 @@
 'use client'
 
+import {
+  closestCenter,
+  closestCenter as closestCenterLegacy,
+  DndContext,
+  DndContext as DndContextLegacy,
+  DragEndEvent,
+  KeyboardSensor,
+  KeyboardSensor as KeyboardSensorLegacy,
+  PointerSensor,
+  PointerSensor as PointerSensorLegacy,
+  useSensor,
+  useSensor as useSensorLegacy,
+  useSensors,
+  useSensors as useSensorsLegacy,
+} from '@hello-pangea/dnd'
+
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { supabase } from '@/lib/supabase'
-import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@hello-pangea/dnd'
 import { useEffect, useState } from 'react'
 
 type Task = {
@@ -16,7 +31,7 @@ type Task = {
 const columns = {
   todo: 'در انتظار',
   inprogress: 'در حال انجام',
-  done: 'انجام شده'
+  done: 'انجام شده',
 }
 
 export default function KanbanPage() {
@@ -28,10 +43,8 @@ export default function KanbanPage() {
   )
 
   useEffect(() => {
-    // بارگذاری اولیه
     fetchTasks()
 
-    // Realtime subscription
     const channel = supabase
       .channel('tasks-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
@@ -55,7 +68,6 @@ export default function KanbanPage() {
     const newStatus = over.id as Task['status']
 
     await supabase.from('tasks').update({ status: newStatus }).eq('id', taskId)
-    // Realtime خودش آپدیت می‌کنه
   }
 
   return (
@@ -71,7 +83,7 @@ export default function KanbanPage() {
                 {tasks
                   .filter(t => t.status === key)
                   .map(task => (
-                    <Card key={task.id} data-id={task.id} className="cursor-move">
+                    <Card key={task.id} draggable className="cursor-move">
                       <CardHeader className="pb-3">
                         <CardTitle className="text-sm">{task.title}</CardTitle>
                       </CardHeader>
