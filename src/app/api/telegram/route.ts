@@ -43,8 +43,21 @@ async function getOrCreateUser(tgUser: any): Promise<Profile> {
   return profile as Profile
 }
 
+bot.command('dashboard', (ctx) => {
+  ctx.reply('داشبورد حرفه‌ای شما', {
+    reply_markup: {
+      inline_keyboard: [[
+        { text: 'باز کردن داشبورد', web_app: { url: 'https://taskbotdashboard.up.railway.app/webapp' } }
+      ]]
+    }
+  })
+})
+
 // دستورات ربات
-bot.start((ctx) => ctx.reply('سلام! ربات مدیریت وظایف فعال شد\nدستورات: /new خرید نون\n/mytasks\n/done 1'))
+bot.start((ctx) => ctx.reply(
+  'سلام به TaskBot Persian خوش اومدی!\n\n' +
+  'دستورات:\n/new خرید نون\n/mytasks\n/done 1\n/dashboard → وب‌اپ حرفه‌ای'
+))
 
 bot.command('new', async (ctx) => {
   const text = ctx.message?.text?.replace('/new', '').trim()

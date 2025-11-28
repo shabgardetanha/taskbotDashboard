@@ -54,6 +54,21 @@ create policy "users can manage own tasks" on tasks
 
 `supabase db push`
 
-https://api.telegram.org/bot8583059954:AAE9DmTwfIutLihdFEIQCZG0O-mFuSYW_Pk/setWebhook?url=https://eloquent-quokka-7cf0d2.netlify.app//.netlify/functions/telegram
-
 https://api.telegram.org/bot8583059954:AAE9DmTwfIutLihdFEIQCZG0O-mFuSYW_Pk/getWebhookInfo
+
+https://api.telegram.org/bot8583059954:AAE9DmTwfIutLihdFEIQCZG0O-mFuSYW_Pk/setWebhook?url=https://taskbotdashboard-production.up.railway.app/api/telegram
+
+```
+curl -X POST https://taskbotdashboard-production.up.railway.app/api/telegram \
+  -H "Content-Type: application/json" \
+  -d '{
+    "update_id": 12345,
+    "message": {
+      "message_id": 1,
+      "from": {"id": 12345, "is_bot": false, "first_name": "Test"},
+      "chat": {"id": 12345, "type": "private"},
+      "date": 1732823800,
+      "text": "/start"
+    }
+  }
+```
