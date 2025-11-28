@@ -47,7 +47,9 @@ bot.command('new', async (ctx) => {
     full_name: string
   }
 
-  const user = await getOrCreateUser(ctx.from) as Profile
+  const user = await getOrCreateUser(ctx.from)
+    if (!user) return ctx.reply('خطا در شناسایی کاربر!')
+
   const { data } = await supabase
     .from('tasks')
     .insert({
