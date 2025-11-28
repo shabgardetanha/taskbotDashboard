@@ -21,29 +21,29 @@ const path = require('path')
 
   const supabase = createClient(url, key)
   try {
+    // Find or create a profile to use as owner/assignee
+    let { data: profile, error: profileErr } = await supabase.from('profiles').select('id').limit(1).maybeSingle()
+    if (profileErr) throw profileErr
+    let ownerId = profile?.id
+    if (!ownerId) {
+      const { data: tdata } = await supabase.from('tasks').select('assignee_id').neq('assignee_id', null).limit(1)
+      ownerId = tdata && tdata.length ? tdata[0].assignee_id : null
+    }
+    if (!ownerId) throw new Error('No profile found to be workspace owner; please create a profile first')
+
     // Ensure we have a workspace to attach to (some triggers require workspace_id)
     let { data: ws, error: wsErr } = await supabase.from('workspaces').select('id').limit(1).maybeSingle()
     if (wsErr) throw wsErr
 
     let workspaceId = ws?.id
     if (!workspaceId) {
-      // find a profile to be the owner
-      let { data: profile, error: profileErr } = await supabase.from('profiles').select('id').limit(1).maybeSingle()
-      if (profileErr) throw profileErr
-      let ownerId = profile?.id
-      if (!ownerId) {
-        // fallback: try to extract any assignee_id from existing tasks
-        const { data: tdata } = await supabase.from('tasks').select('assignee_id').neq('assignee_id', null).limit(1)
-        ownerId = tdata && tdata.length ? tdata[0].assignee_id : null
-      }
-      if (!ownerId) throw new Error('No profile found to be workspace owner; please create a profile first')
       const { data: newWs, error: createErr } = await supabase.from('workspaces').insert({ name: 'dev-default', owner_id: ownerId }).select().single()
       if (createErr) throw createErr
       workspaceId = newWs.id
     }
 
     const title = 'Script Test Task ' + new Date().toISOString()
-    const insert = await supabase.from('tasks').insert({ title, status: 'todo', priority: 'medium', assignee_id: null, workspace_id: workspaceId }).select()
+    const insert = await supabase.from('tasks').insert({ title, status: 'todo', priority: 'medium', assignee_id: ownerId, workspace_id: workspaceId }).select()
     console.log('Insert result:', JSON.stringify(insert, null, 2))
 
     const { data: tasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false }).limit(5)
