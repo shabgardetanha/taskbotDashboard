@@ -1,15 +1,15 @@
 // src/app/webapp/page.tsx  ← فقط این فایل رو کامل جایگزین کن
 'use client'
 
-import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
-import { motion, AnimatePresence } from 'framer-motion'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { supabase } from '@/lib/supabase'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 type Task = { id: number; title: string; status: string; priority: string; created_at: string }
 
@@ -26,15 +26,22 @@ export default function TelegramWebAppPro() {
     }
 
     fetchTasks()
-    const channel = supabase.channel('tasks-webapp')
+
+    const channel = supabase
+      .channel('tasks-webapp')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => fetchTasks())
       .subscribe()
 
-    return () => { supabase.removeChannel(channel) }
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [])
 
   const fetchTasks = async () => {
-    const { data } = await supabase.from('tasks').select('*').order('created_at', { ascending: false })
+    const { data } = await supabase
+      .from('tasks')
+      .select('*')
+      .order('created_at', { ascending: false })
     setTasks((data as Task[]) || [])
   }
 
@@ -67,18 +74,14 @@ export default function TelegramWebAppPro() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white overflow-x-hidden">
       {/* پس‌زمینه انیمیشنی */}
-      <div className="fixed inset-0 opacity-30">
+      <div className="fixed inset-0 opacity-30 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-r from-purple-600/50 to-pink-600/50 animate-pulse" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/20 to-transparent animate-ping" />
       </div>
 
       <div className="relative z-10 p-4 pb-20">
         {/* هدر با آمار */}
-        <motion.div
-          initial={{ y: -50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="text-center mb-8"
-        >
+        <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-center mb-8">
           <h1 className="text-5xl font-bold bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
             TaskBot Pro
           </h1>
@@ -91,7 +94,7 @@ export default function TelegramWebAppPro() {
             </div>
             <Progress value={progress} className="h-4 bg-white/20" />
           </div>
-        </div>
+        </motion.div>
 
         {/* نمودار زنده */}
         <motion.div
