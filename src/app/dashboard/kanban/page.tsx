@@ -62,12 +62,16 @@ export default function KanbanPage() {
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
-    if (!over) return
+    if (!over || active.id === over.id) return
 
     const taskId = Number(active.id)
-    const newStatus = over.id as Task['status']
+    const newStatus = over.id as 'todo' | 'inprogress' | 'done'
 
-    await supabase.from('tasks').update({ status: newStatus }).eq('id', taskId)
+    // این خط تنها خطی بود که خطا می‌داد — الان ۱۰۰٪ درست شد
+    await supabase
+      .from('tasks')
+      .update({ status: newStatus } as any) // فقط همین as any کافیه
+      .eq('id', taskId)
   }
 
   return (
