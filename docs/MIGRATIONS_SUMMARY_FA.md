@@ -9,6 +9,7 @@ supabase db push
 ```
 
 این یک دستور انجام می‌دهد:
+
 1. ✅ فایل‌های SQL را خوانده
 2. ✅ به Supabase سرور ارسال می‌کند
 3. ✅ جداول، اینجکس‌ها، RLS policies را ایجاد می‌کند
@@ -44,6 +45,7 @@ YYYYMMDD_description_name.sql
 ```
 
 **مثال:**
+
 - `20251128` = تاریخ (28 نوامبر 2025)
 - `phase1_extended_tasks` = نام مرحله
 
@@ -66,6 +68,7 @@ $ supabase db push
 ```
 
 **بررسی می‌کند:**
+
 - کدام فایل‌های SQL جدید هستند؟
 - کدام‌ها قبلاً اجرا شده‌اند؟
 - چه فایل‌هایی pending هستند؟
@@ -142,6 +145,7 @@ ALTER TABLE tasks ADD COLUMN description text;
 ```
 
 **وقتی `supabase db push` اجرا شود:**
+
 - ✅ `task_labels` جدول ایجاد می‌شود
 - ✅ `task_label_links` جدول ایجاد می‌شود
 - ✅ `subtasks` جدول ایجاد می‌شود
@@ -156,18 +160,19 @@ ALTER TABLE tasks ADD COLUMN description text;
 
 ```sql
 -- Policy: کاربر فقط workspaces خود را ببیند
-CREATE POLICY "users can view workspaces they're members of" 
+CREATE POLICY "users can view workspaces they're members of"
 ON workspaces
-FOR SELECT 
+FOR SELECT
 USING (
   auth.uid() IN (
-    SELECT user_id FROM workspace_members 
+    SELECT user_id FROM workspace_members
     WHERE workspace_id = workspaces.id
   )
 );
 ```
 
 **اثر:**
+
 - کاربر A فقط workspaces A را می‌بیند
 - کاربر B فقط workspaces B را می‌بیند
 - هیچ cross-access وجود ندارد
@@ -177,12 +182,14 @@ USING (
 ## 📊 جداول بعد از Migrations
 
 ### قبل (1 جدول):
+
 ```
 ├── profiles
 └── tasks
 ```
 
 ### بعد (15 جدول):
+
 ```
 ├── profiles
 ├── tasks (extended)
@@ -206,32 +213,39 @@ USING (
 ## 🚀 دستورات Supabase
 
 ### ورود (یک‌بار)
+
 ```bash
 supabase login
 ```
+
 صفحه مرورگر باز می‌شود → وارد شوید
 
 ### اتصال (یک‌بار)
+
 ```bash
 supabase link --project-ref qkiexuabetcejvbpztje
 ```
 
 ### اجرای Migrations
+
 ```bash
 supabase db push
 ```
 
 ### پیش‌نمایش (بدون تغییر)
+
 ```bash
 supabase db push --dry-run
 ```
 
 ### بررسی وضعیت
+
 ```bash
 supabase db status
 ```
 
 ### دانلود تغییرات
+
 ```bash
 supabase db pull
 ```
@@ -241,16 +255,19 @@ supabase db pull
 ## 🛠️ مثال عملی: اجرای کامل
 
 ### مرحله ۱: Terminal باز کنید
+
 ```powershell
 cd c:\VsProject\taskbotDashboard
 ```
 
 ### مرحله ۲: اتصال
+
 ```bash
 supabase link --project-ref qkiexuabetcejvbpztje
 ```
 
 ### مرحله ۳: پیش‌نمایش
+
 ```bash
 supabase db push --dry-run
 
@@ -262,6 +279,7 @@ Pending migrations:
 ```
 
 ### مرحله ۴: اجرا
+
 ```bash
 supabase db push
 
@@ -275,9 +293,10 @@ y
 ```
 
 ### مرحله ۵: بررسی
+
 ```sql
 -- Supabase Dashboard SQL Editor میں:
-SELECT table_name FROM information_schema.tables 
+SELECT table_name FROM information_schema.tables
 WHERE table_schema = 'public';
 
 Result:
@@ -302,12 +321,14 @@ workspace_members
 ## ⚠️ اهم نکات
 
 ### ✅ Migration ها Immutable هستند
+
 ```
 یک بار اجرا شدند → نمی‌تونند تغییر کنند
 برای تغییر → migration جدید بسازید
 ```
 
 ### ✅ فایل‌ها تاریخ‌دار هستند
+
 ```
 ۲۰۲۵۱۱۲۸ (جدیدتر) → اجرا شود
 ۲۰۲۵۱۱۲۹ (جدیدتر) → بعد اجرا شود
@@ -315,12 +336,14 @@ workspace_members
 ```
 
 ### ✅ Realtime خودکار فعال است
+
 ```
 جداول جدید → خودکار realtime
 = Frontend اطلاعات live دریافت می‌کند
 ```
 
 ### ✅ بدون Downtime
+
 ```
 Existing data → محفوظ می‌ماند
 API → کار می‌کند
@@ -336,60 +359,64 @@ Users → متوجه نمی‌شوند
 ```typescript
 // Task با برچسب اضافه کنید
 const { data } = await supabase
-  .from('task_label_links')
-  .insert({ task_id: 1, label_id: 'uuid' })
+  .from("task_label_links")
+  .insert({ task_id: 1, label_id: "uuid" });
 
 // Workspace بسازید
 const { data } = await supabase
-  .from('workspaces')
-  .insert({ name: 'تیم', owner_id: 'user-uuid' })
+  .from("workspaces")
+  .insert({ name: "تیم", owner_id: "user-uuid" });
 
 // وظیفه تکراری ایجاد کنید
-const { data } = await supabase
-  .from('tasks')
-  .insert({
-    title: 'کار روزانه',
-    is_recurring: true,
-    recurrence_rule: 'daily'
-  })
+const { data } = await supabase.from("tasks").insert({
+  title: "کار روزانه",
+  is_recurring: true,
+  recurrence_rule: "daily",
+});
 ```
 
 ---
 
 ## 🎓 خلاصه
 
-| سوال | جواب |
-|------|------|
-| **جداول کجا تعریف می‌شوند?** | `supabase/migrations/*.sql` |
-| **چگونه اجرا می‌شوند?** | `supabase db push` |
-| **کدام جداول جدیدند?** | 14 جدول (بدون originals) |
-| **چقدر طول می‌کشد?** | ~4 دقیقه |
-| **Downtime هست؟** | خیر، بدون downtime |
-| **می‌تونم rollback کنم؟** | بله، migration جدید برای rollback |
-| **RLS خودکار؟** | بله، migrations شامل RLS |
-| **API فوری کار می‌کند؟** | بله، بعد از migration |
+| سوال                         | جواب                              |
+| ---------------------------- | --------------------------------- |
+| **جداول کجا تعریف می‌شوند?** | `supabase/migrations/*.sql`       |
+| **چگونه اجرا می‌شوند?**      | `supabase db push`                |
+| **کدام جداول جدیدند?**       | 14 جدول (بدون originals)          |
+| **چقدر طول می‌کشد?**         | ~4 دقیقه                          |
+| **Downtime هست؟**            | خیر، بدون downtime                |
+| **می‌تونم rollback کنم؟**    | بله، migration جدید برای rollback |
+| **RLS خودکار؟**              | بله، migrations شامل RLS          |
+| **API فوری کار می‌کند؟**     | بله، بعد از migration             |
 
 ---
 
 ## 🆘 سوالات عام
 
 ### س: اگر خطا رخ داد؟
-**ج:** 
+
+**ج:**
+
 ```bash
 supabase db pull          # تغییرات دانلود کن
 supabase db push          # دوباره سعی کن
 ```
 
 ### س: چطور می‌فهمم جداول ایجاد شدند؟
+
 **ج:** Dashboard → SQL Editor:
+
 ```sql
 SELECT * FROM information_schema.tables;
 ```
 
 ### س: می‌تونم migration را حذف کنم؟
+
 **ج:** خیر! فایل‌های اجرا شده immutable هستند.
 
 ### س: اگر forget کردم migration push کنم؟
+
 **ج:** `supabase db push` دوباره آن را detect می‌کند.
 
 ---
@@ -397,4 +424,5 @@ SELECT * FROM information_schema.tables;
 ## 🎉 نتیجه
 
 **جداول جدید در Supabase:**
+
 - ✅ 14 جدول + 15 اندکس

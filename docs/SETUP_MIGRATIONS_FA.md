@@ -2,8 +2,8 @@
 
 ## 📋 خلاصه سریع
 
-**فایل‌های Migration آماده:** 3 فایل  
-**تعداد جداول جدید:** 11 جدول  
+**فایل‌های Migration آماده:** 3 فایل
+**تعداد جداول جدید:** 11 جدول
 **دستورات مورد نیاز:** 2-3 دستور فقط
 
 ---
@@ -11,25 +11,31 @@
 ## 🚀 شروع سریع (۲ دقیقه)
 
 ### مرحله ۱: باز کردن Terminal
+
 ```powershell
 cd c:\VsProject\taskbotDashboard
 ```
 
 ### مرحله ۲: ورود به Supabase (اگر قبلاً ورود نکرده‌اید)
+
 ```bash
 supabase login
 ```
+
 ✅ صفحه‌ای باز می‌شود، وارد شوید
 
 ### مرحله ۳: اتصال به پروژه
+
 ```bash
 supabase link --project-ref qkiexuabetcejvbpztje
 ```
 
 ### مرحله ۴: اجرای جداول جدید
+
 ```bash
 supabase db push
 ```
+
 ✅ تمام جداول خودکار اضافه می‌شوند
 
 ---
@@ -37,6 +43,7 @@ supabase db push
 ## 📊 چه چیزی اضافه می‌شود؟
 
 ### Phase 1: وسایل توسعه‌یافته (28 نوامبر)
+
 ```
 ✅ task_labels      - برچسب‌های وظایف
 ✅ task_label_links - ارتباط وظایف و برچسب‌ها
@@ -44,6 +51,7 @@ supabase db push
 ```
 
 ### Phase 2: Workspaces و همکاری (29 نوامبر)
+
 ```
 ✅ workspaces        - فضاهای کاری
 ✅ workspace_members - اعضای تیم
@@ -53,6 +61,7 @@ supabase db push
 ```
 
 ### Phase 3: Templates و Recurring (30 نوامبر)
+
 ```
 ✅ task_templates           - الگو‌های وظایف
 ✅ recurring_task_instances - وظایف تکراری
@@ -71,13 +80,14 @@ supabase db push
 
 ```sql
 -- اجرا کنید در Supabase SQL Editor
-SELECT table_name 
-FROM information_schema.tables 
-WHERE table_schema = 'public' 
+SELECT table_name
+FROM information_schema.tables
+WHERE table_schema = 'public'
 ORDER BY table_name;
 ```
 
 **نتیجه مورد انتظار:**
+
 ```
 activity_logs
 board_columns
@@ -103,29 +113,32 @@ workspace_members
 ### ۱. اضافه کردن برچسب به وظیفه
 
 **SQL:**
+
 ```sql
 -- ایجاد برچسب
-INSERT INTO task_labels (name, color, workspace_id) 
+INSERT INTO task_labels (name, color, workspace_id)
 VALUES ('فوری', '#ef4444', 'workspace-uuid');
 
 -- پیوند با وظیفه
-INSERT INTO task_label_links (task_id, label_id) 
+INSERT INTO task_label_links (task_id, label_id)
 VALUES (1, 'label-uuid');
 ```
 
 ### ۲. ایجاد Workspace جدید
 
 **SQL:**
+
 ```sql
-INSERT INTO workspaces (name, owner_id) 
+INSERT INTO workspaces (name, owner_id)
 VALUES ('تیم مارکتینگ', 'user-uuid');
 ```
 
 ### ۳. ثبت وظیفه تکراری
 
 **SQL:**
+
 ```sql
-INSERT INTO tasks (title, assignee_id, is_recurring, recurrence_rule, due_date) 
+INSERT INTO tasks (title, assignee_id, is_recurring, recurrence_rule, due_date)
 VALUES ('بررسی ایمیل‌ها', 'user-uuid', true, 'daily', CURRENT_DATE);
 ```
 
@@ -134,12 +147,14 @@ VALUES ('بررسی ایمیل‌ها', 'user-uuid', true, 'daily', CURRENT_DATE
 ## 🛠️ عیب‌یابی
 
 ### ❌ خطا: "database is being updated"
+
 ```bash
 # صبر کنید و دوباره تلاش کنید
 supabase db push
 ```
 
 ### ❌ خطا: "permission denied"
+
 ```bash
 # مجدد وارد شوید
 supabase logout
@@ -148,6 +163,7 @@ supabase db push
 ```
 
 ### ❌ خطا: "function already exists"
+
 ```bash
 # Pull تغییرات از سرور
 supabase db pull
@@ -161,31 +177,35 @@ supabase db push
 ### مثال: دریافت وظایف با برچسب‌ها
 
 **TypeScript (src/lib/supabase.ts):**
+
 ```typescript
 const { data: tasks } = await supabase
-  .from('tasks')
-  .select(`
+  .from("tasks")
+  .select(
+    `
     *,
     labels:task_label_links(
       label:task_labels(id, name, color)
     ),
     subtasks(*)
-  `)
-  .eq('workspace_id', workspaceId)
+  `
+  )
+  .eq("workspace_id", workspaceId);
 ```
 
 ### مثال: ایجاد وظیفه در Workspace
 
 **TypeScript (src/app/api/tasks/route.ts):**
+
 ```typescript
-await supabase.from('tasks').insert({
-  title: 'عنوان',
-  description: 'توضیح',
+await supabase.from("tasks").insert({
+  title: "عنوان",
+  description: "توضیح",
   workspace_id: workspaceId,
   assignee_id: userId,
-  due_date: '2025-12-31',
-  status: 'todo'
-})
+  due_date: "2025-12-31",
+  status: "todo",
+});
 ```
 
 ---
@@ -193,11 +213,13 @@ await supabase.from('tasks').insert({
 ## 🔒 RLS (امنیت) - چگونه کار می‌کند؟
 
 **فقط صاحب Workspace می‌تونه:**
+
 - ✅ اعضای تیم را اضافه کند
 - ✅ بورد جدید درست کند
 - ✅ وظایف را حذف کند
 
 **اعضا می‌تونند:**
+
 - ✅ وظایف خود را مشاهده کنند
 - ✅ وظایف را ویرایش کنند
 - ✅ زیرمجموعه‌ها اضافه کنند
@@ -233,6 +255,7 @@ supabase logs --project-ref qkiexuabetcejvbpztje
 - ✅ Triggers برای activity logging درست هستند
 
 **حالا می‌تونید:**
+
 - 🔧 API endpoints را استفاده کنید
 - 🎨 UI components را integrate کنید
 - 📱 Telegram commands جدید را تست کنید
@@ -242,6 +265,7 @@ supabase logs --project-ref qkiexuabetcejvbpztje
 ## 🆘 کمک بیشتر
 
 اگر خطایی رخ داد:
+
 1. پیام خطا را کپی کنید
 2. بررسی کنید `SUPABASE_SERVICE_ROLE_KEY` تنظیم شده
 3. اجرا کنید: `supabase db pull` سپس `supabase db push`

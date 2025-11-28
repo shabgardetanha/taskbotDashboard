@@ -5,11 +5,13 @@
 ### 🇮🇷 Farsi Documentation (فارسی)
 
 1. **[MIGRATIONS_SUMMARY_FA.md](./MIGRATIONS_SUMMARY_FA.md)** ⭐ **START HERE**
+
    - خلاصه کامل درباره جداول جدید
    - سوالات و جوابات عام
    - مثال‌های عملی
 
 2. **[MIGRATION_GUIDE_FA.md](./migrations/MIGRATION_GUIDE_FA.md)**
+
    - راهنمای تفصیلی اجرای Migrations
    - نصب Supabase CLI
    - دستورات مورد نیاز
@@ -24,6 +26,7 @@
 ### 🇬🇧 English Documentation
 
 4. **[MIGRATIONS_CHECKLIST.md](./MIGRATIONS_CHECKLIST.md)** ⭐ **FOR TEAMS**
+
    - Complete execution checklist
    - Pre/post verification steps
    - Rollback procedures
@@ -38,6 +41,7 @@
 ### 📖 Project Documentation
 
 6. **[UPGRADE_ROADMAP.md](./UPGRADE_ROADMAP.md)**
+
    - Full 4-phase feature roadmap
    - Trello + Notion comparison
    - Implementation priorities
@@ -100,11 +104,13 @@ supabase/migrations/
 ### 14 New Tables
 
 **Phase 1: Task Enhancement**
+
 - `task_labels` - Task categorization
 - `task_label_links` - M2M relationship
 - `subtasks` - Task decomposition
 
 **Phase 2: Collaboration**
+
 - `workspaces` - Workspace containers
 - `workspace_members` - Team management
 - `boards` - Kanban boards
@@ -112,6 +118,7 @@ supabase/migrations/
 - `activity_logs` - Audit trail
 
 **Phase 3: Advanced Features**
+
 - `task_templates` - Template library
 - `recurring_task_instances` - Recurring management
 - `task_dependencies` - Task blockers
@@ -129,13 +136,13 @@ supabase/migrations/
 
 ## ⏱️ Execution Timeline
 
-| Step | Duration | Action |
-|------|----------|--------|
-| Link | 30s | `supabase link --project-ref ...` |
-| Verify | 1min | Check pending migrations |
-| Execute | 4min | `supabase db push` |
-| Test | 2min | Verify tables created |
-| **Total** | **~7min** | Ready for deployment |
+| Step      | Duration  | Action                            |
+| --------- | --------- | --------------------------------- |
+| Link      | 30s       | `supabase link --project-ref ...` |
+| Verify    | 1min      | Check pending migrations          |
+| Execute   | 4min      | `supabase db push`                |
+| Test      | 2min      | Verify tables created             |
+| **Total** | **~7min** | Ready for deployment              |
 
 ---
 
@@ -160,6 +167,7 @@ Return empty (403 Forbidden)
 ## 📝 Migration Files Content
 
 ### Phase 1 Highlights
+
 ```sql
 -- Add due dates to tasks
 ALTER TABLE tasks ADD COLUMN (due_date date, due_time time);
@@ -172,6 +180,7 @@ CREATE TABLE subtasks (id uuid, task_id bigint, title text, completed boolean);
 ```
 
 ### Phase 2 Highlights
+
 ```sql
 -- Create workspaces
 CREATE TABLE workspaces (id uuid, name text, owner_id uuid);
@@ -185,6 +194,7 @@ CREATE POLICY "users can view workspaces..." ON workspaces;
 ```
 
 ### Phase 3 Highlights
+
 ```sql
 -- Create templates
 CREATE TABLE task_templates (id uuid, template_data jsonb);
@@ -237,13 +247,13 @@ After running `supabase db push`:
 
 ## 🆘 Troubleshooting
 
-| Problem | Solution | Document |
-|---------|----------|----------|
-| "Not connected" | Run `supabase link` | MIGRATION_GUIDE_FA.md |
-| "Permission denied" | Run `supabase login` | MIGRATION_GUIDE_FA.md |
-| "Already applied" | Run `supabase db pull` | MIGRATION_GUIDE_FA.md |
-| "Need rollback" | Create new migration | MIGRATIONS_CHECKLIST.md |
-| "Verify tables" | Use SQL queries | MIGRATIONS_CHECKLIST.md |
+| Problem             | Solution               | Document                |
+| ------------------- | ---------------------- | ----------------------- |
+| "Not connected"     | Run `supabase link`    | MIGRATION_GUIDE_FA.md   |
+| "Permission denied" | Run `supabase login`   | MIGRATION_GUIDE_FA.md   |
+| "Already applied"   | Run `supabase db pull` | MIGRATION_GUIDE_FA.md   |
+| "Need rollback"     | Create new migration   | MIGRATIONS_CHECKLIST.md |
+| "Verify tables"     | Use SQL queries        | MIGRATIONS_CHECKLIST.md |
 
 ---
 
@@ -254,20 +264,20 @@ After running `supabase db push`:
 ```typescript
 // Phase 1: Task with labels
 const { data } = await supabase
-  .from('tasks')
-  .select(`*, labels:task_label_links(label:task_labels(*))`)
+  .from("tasks")
+  .select(`*, labels:task_label_links(label:task_labels(*))`);
 
 // Phase 2: Workspace tasks
 const { data } = await supabase
-  .from('tasks')
-  .select('*')
-  .eq('workspace_id', 'ws-uuid')
+  .from("tasks")
+  .select("*")
+  .eq("workspace_id", "ws-uuid");
 
 // Phase 3: Template tasks
 const { data } = await supabase
-  .from('task_templates')
-  .select('*')
-  .eq('workspace_id', 'ws-uuid')
+  .from("task_templates")
+  .select("*")
+  .eq("workspace_id", "ws-uuid");
 ```
 
 ### UI Components Ready
@@ -282,16 +292,19 @@ const { data } = await supabase
 ## 🎓 Learning Path
 
 ### Beginner (5-10 mins)
+
 1. Read: `MIGRATIONS_SUMMARY_FA.md`
 2. Understand: 14 new tables
 3. Command: `supabase db push`
 
 ### Intermediate (15-20 mins)
+
 1. Study: `MIGRATIONS_VISUAL_GUIDE.md`
 2. Understand: RLS model
 3. Review: `MIGRATIONS_CHECKLIST.md`
 
 ### Advanced (30+ mins)
+
 1. Read: `UPGRADE_ROADMAP.md`
 2. Study: SQL migration files
 3. Plan: Future phases
@@ -343,18 +356,20 @@ Project Root
 ## 🚀 Ready to Execute?
 
 ### Just run this:
+
 ```bash
 cd c:\VsProject\taskbotDashboard
 supabase db push
 ```
 
 ### That's it!
+
 - ✅ 14 tables created
 - ✅ RLS policies applied
 - ✅ API ready to use
 
 ---
 
-**Last Updated**: November 28, 2025  
-**Version**: 1.0  
+**Last Updated**: November 28, 2025
+**Version**: 1.0
 **Status**: Ready for Production ✅

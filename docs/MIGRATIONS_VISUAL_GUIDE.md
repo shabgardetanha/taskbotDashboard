@@ -71,6 +71,7 @@
 ## 📋 Step-by-Step Execution
 
 ### Step 1: Local Files Detected
+
 ```
 Terminal> supabase db push
 
@@ -82,6 +83,7 @@ Terminal> supabase db push
 **Status:** Checking which .sql files are pending
 
 ### Step 2: Dry Run (Optional)
+
 ```
 Terminal> supabase db push --dry-run
 
@@ -96,6 +98,7 @@ Ready to apply 3 migrations
 **Status:** Preview without making changes
 
 ### Step 3: User Confirmation
+
 ```
 Terminal> supabase db push
 
@@ -106,6 +109,7 @@ Ready to apply 3 migrations. Continue? (y/n)
 **Status:** Waiting for approval
 
 ### Step 4: Phase 1 Execution
+
 ```
 Applying: 20251128_phase1_extended_tasks.sql [████████░░] 33%
 
@@ -121,6 +125,7 @@ Status: ✅ Phase 1 Complete
 ```
 
 ### Step 5: Phase 2 Execution
+
 ```
 Applying: 20251129_phase2_workspaces_rbac.sql [████████████░░░] 66%
 
@@ -140,6 +145,7 @@ Status: ✅ Phase 2 Complete
 ```
 
 ### Step 6: Phase 3 Execution
+
 ```
 Applying: 20251130_phase3_templates_recurring_sql [████████████████] 100%
 
@@ -156,6 +162,7 @@ Status: ✅ Phase 3 Complete
 ```
 
 ### Step 7: Final Confirmation
+
 ```
 ✅ All migrations applied successfully
 ✅ Database schema synchronized
@@ -366,18 +373,22 @@ Total: ~4 minutes
 ## 🎯 Key Takeaways
 
 1. **Migrations are Immutable**
+
    - Once executed, they cannot be undone directly
    - Create new migration files for rollbacks
 
 2. **Execution Order Matters**
+
    - Phase 1 → Phase 2 → Phase 3 (in sequence)
    - Dependencies resolved automatically
 
 3. **RLS Protects Data**
+
    - Each query is filtered by user permissions
    - Happens at database level (most secure)
 
 4. **Realtime Enabled**
+
    - New tables automatically subscribed to Realtime
    - Frontend can receive live updates
 
@@ -395,6 +406,6 @@ Total: ~4 minutes
 
 // Phase 1: Add label to task
 await supabase
-  .from('task_label_links')
-  .insert({ task_id: 1, label_id: 'uuid' })
+  .from("task_label_links")
+  .insert({ task_id: 1, label_id: "uuid" });
 ```
