@@ -2,18 +2,12 @@
 
 import {
   closestCenter,
-  closestCenter as closestCenterLegacy,
   DndContext,
-  DndContext as DndContextLegacy,
   DragEndEvent,
   KeyboardSensor,
-  KeyboardSensor as KeyboardSensorLegacy,
   PointerSensor,
-  PointerSensor as PointerSensorLegacy,
   useSensor,
-  useSensor as useSensorLegacy,
   useSensors,
-  useSensors as useSensorsLegacy,
 } from '@hello-pangea/dnd'
 
 import { Badge } from '@/components/ui/badge'
@@ -28,7 +22,7 @@ type Task = {
   status: 'todo' | 'inprogress' | 'done'
 }
 
-const columns = {
+const columns: Record<string, string> = {
   todo: 'در انتظار',
   inprogress: 'در حال انجام',
   done: 'انجام شده',
@@ -52,7 +46,9 @@ export default function KanbanPage() {
       })
       .subscribe()
 
-    return () => { supabase.removeChannel(channel) }
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [])
 
   const fetchTasks = async () => {
@@ -83,7 +79,7 @@ export default function KanbanPage() {
                 {tasks
                   .filter(t => t.status === key)
                   .map(task => (
-                    <Card key={task.id} draggable className="cursor-move">
+                    <Card key={task.id} className="cursor-move">
                       <CardHeader className="pb-3">
                         <CardTitle className="text-sm">{task.title}</CardTitle>
                       </CardHeader>
