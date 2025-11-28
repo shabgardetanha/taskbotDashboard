@@ -43,7 +43,7 @@ bot.command('new', async (ctx) => {
   const user = await getOrCreateUser(ctx.from)
   const { data } = await supabase
     .from('tasks')
-    .insert({ title: text, assignee_id: user.id })
+    .insert({ title: text, assignee_id: user.id } as any)
     .select()
     .single()
 
