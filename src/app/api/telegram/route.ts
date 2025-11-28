@@ -20,57 +20,83 @@ interface Profile {
 async function getOrCreateUser(tgUser: any): Promise<Profile> {
   let { data: profile } = await supabase
     .from('profiles')
-    .select('id')
+    .select('id, telegram_id')
     .eq('telegram_id', tgUser.id)
     .single()
 
   if (!profile) {
     const { data: newProfile } = await supabase
       .from('profiles')
-      .insert({ telegram_id: tgUser.id, full_name: tgUser.first_name })
+      .insert({
+        telegram_id: tgUser.id,
+        full_name: tgUser.first_name || 'کاربر',
+        username: tgUser.username || null,
+      })
       .select()
       .single()
-    profile = newProfile!
+
+    if (!newProfile) throw new Error('Failed to create profile')
+    profile = newProfile
   }
 
-  return profile
+  // این خط فقط برای TypeScript — در عمل همیشه profile داریم
+  return profile as Profile
 }
 
-// دستورات ربات — مستقیم روی bot اصلی
+// دستورات ربات
 bot.start((ctx) => ctx.reply('سلام! ربات مدیریت وظایف فعال شد\nدستورات: /new خرید نون\n/mytasks\n/done 1'))
 
 bot.command('new', async (ctx) => {
   const text = ctx.message?.text?.replace('/new', '').trim()
-  if (!text) return ctx.reply('متن وظیفه رو بنویس')
+  if (!text) return ctx.reply('متن وظیفه رو بعد از /new بنویس')
 
-  const user = await getOrCreateUser(ctx.from!)
-  const { data: task } = await supabase
-    .from('tasks')
-    .insert({ title: text, assignee_id: user.id })
-    .select()
-    .single()
+  try {
+    const user = await getOrCreateUser(ctx.from!)
+    const { data: task } = await supabase
+      .from('tasks')
+      .insert({ title: text, assignee_id: user.id, status: 'todo', priority: 'medium' })
+      .select()
+      .single()
 
-  ctx.reply(task ? `وظیفه #${task.id} اضافه شد ✅` : 'خطا')
+    ctx.reply(task ? `وظیفه #${task.id} اضافه شد` : 'خطا در ایجاد وظیفه')
+  } catch (e) {
+    ctx.reply('خطا')
+  }
 })
 
 bot.command('mytasks', async (ctx) => {
-  const user = await getOrCreateUser(ctx.from!)
-  const { data: tasks } = await supabase.from('tasks').select('id, title, status').eq('assignee_id', user.id)
+  try {
+    const user = await getOrCreateUser(ctx.from!)
+    const { data: tasks } = await supabase
+      .from('tasks')
+      .select('id, title, status, priority')
+      .eq('assignee_id', user.id)
 
-  if (!tasks?.length) return ctx.reply('هیچ وظیفه‌ای ندارید')
+    if (!tasks?.length) return ctx.reply('هیچ وظیفه‌ای ندارید')
 
-  const msg = tasks.map(t => `#${t.id} | ${t.title} (${t.status})`).join('\n')
-  ctx.reply(`وظایف شما:\n${msg}`)
+    const msg = tasks.map(t => `#${t.id} | ${t.title} (${t.status})`).join('\n')
+    ctx.reply(`وظایف شما:\n${msg}`)
+  } catch {
+    ctx.reply('خطا')
+  }
 })
 
 bot.command('done', async (ctx) => {
   const id = Number(ctx.message?.text?.split(' ')[1])
-  if (!id) return ctx.reply('/done 1')
+  if (!id) return ctx.reply('استفاده: /done 1')
 
-  const user = await getOrCreateUser(ctx.from!)
-  const { error } = await supabase.from('tasks').update({ status: 'done' }).eq('id', id).eq('assignee_id', user.id)
+  try {
+    const user = await getOrCreateUser(ctx.from!)
+    const { error } = await supabase
+      .from('tasks')
+      .update({ status: 'done' })
+      .eq('id', id)
+      .eq('assignee_id', user.id)
 
-  ctx.reply(error ? 'خطا یا وظیفه مال شما نیست' : `وظیفه #${id} انجام شد ✅`)
+    ctx.reply(error ? 'وظیفه مال شما نیست' : `وظیفه #${id} انجام شد`)
+  } catch {
+    ctx.reply('خطا')
+  }
 })
 
 // وب‌هوک
@@ -78,9 +104,9 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     await bot.handleUpdate(body)
-    return new Response('OK')
-  } catch (e) {
-    console.error(e)
+    return new Response('OK', { status: 200 })
+  } catch (error) {
+    console.error('Webhook error:', error)
     return new Response('Error', { status: 500 })
   }
 }
