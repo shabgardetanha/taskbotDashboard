@@ -60,9 +60,11 @@ bot.command('mytasks', async (ctx) => {
 
   if (!tasks?.length) return ctx.reply('هیچ وظیفه‌ای ندارید!')
 
-  const message = tasks.map(t =>
-    `• #${t.id} | ${t.title}\n   وضعیت: ${t.status} | اولویت: ${t.priority}`
-  ).join('\n\n')
+  const message = tasks
+    .map((t: { id: number; title: string; status: string; priority: string }) =>
+      `• #${t.id} | ${t.title}\n   وضعیت: ${t.status} | اولویت: ${t.priority}`
+    )
+    .join('\n\n')
 
   ctx.reply(`وظایف شما:\n\n${message}`)
 })
