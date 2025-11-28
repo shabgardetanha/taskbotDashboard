@@ -112,17 +112,29 @@ ALTER TABLE recurring_task_instances ENABLE ROW LEVEL SECURITY;
 ALTER TABLE task_dependencies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE task_time_logs ENABLE ROW LEVEL SECURITY;
 
--- 10. RLS Policies for templates
-CREATE POLICY "users can view workspace templates" ON task_templates
-  FOR SELECT USING (
-    workspace_id IN (
-      SELECT workspace_id FROM workspace_members WHERE user_id = auth.uid()
-    )
-  );
+-- 10. RLS Policies for templates (idempotent)
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'task_templates' AND policyname = 'users can view workspace templates') THEN
+    CREATE POLICY "users can view workspace templates" ON task_templates
+      FOR SELECT USING (
+        workspace_id IN (
+          SELECT workspace_id FROM workspace_members WHERE user_id = auth.uid()
+        )
+      );
+  END IF;
+END
+$$;
 
-CREATE POLICY "members can create templates" ON task_templates
-  FOR INSERT WITH CHECK (
-    workspace_id IN (
-      SELECT workspace_id FROM workspace_members WHERE user_id = auth.uid()
-    )
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'task_templates' AND policyname = 'members can create templates') THEN
+    CREATE POLICY "members can create templates" ON task_templates
+      FOR INSERT WITH CHECK (
+        workspace_id IN (
+          SELECT workspace_id FROM workspace_members WHERE user_id = auth.uid()
+        )
+      );
+  END IF;
+END
+$$;
