@@ -22,6 +22,8 @@ declare global {
         expand: () => void
         setHeaderColor: (color: string) => void
         setBackgroundColor: (color: string) => void
+        initData?: string
+        initDataUnsafe?: any
       }
     }
   }
@@ -67,7 +69,7 @@ export default function TelegramWebAppPro() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: newTask,
-          telegramId: window.Telegram?.WebApp?.initData ? 0 : Math.floor(Math.random() * 1000000),
+          telegramId: window.Telegram?.WebApp?.initDataUnsafe?.user?.id ?? Math.floor(Math.random() * 1000000),
         }),
       })
       if (response.ok) {
