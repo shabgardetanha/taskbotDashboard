@@ -54,7 +54,7 @@ bot.command('new', async (ctx) => {
     .from('tasks')
     .insert({
       title: text,
-      assignee_id: user?.id
+      assignee_id: user!.id
     } as any)
     .select()
     .single()
