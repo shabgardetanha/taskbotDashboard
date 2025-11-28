@@ -34,3 +34,12 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Documentation
+
+Project documentation has been consolidated under the `docs/` folder. Open the docs index:
+
+- `docs/MIGRATIONS_INDEX.md` — migration docs & quick-start
+- `docs/README.md` — documentation landing page
+
+You can view all docs locally by opening files in the `docs/` directory or on GitHub at the repository root.

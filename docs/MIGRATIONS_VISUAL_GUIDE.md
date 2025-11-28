@@ -141,7 +141,7 @@ Status: ✅ Phase 2 Complete
 
 ### Step 6: Phase 3 Execution
 ```
-Applying: 20251130_phase3_templates_recurring.sql [████████████████] 100%
+Applying: 20251130_phase3_templates_recurring_sql [████████████████] 100%
 
 Creating:
   ✓ task_templates table
@@ -397,22 +397,4 @@ Total: ~4 minutes
 await supabase
   .from('task_label_links')
   .insert({ task_id: 1, label_id: 'uuid' })
-
-// Phase 2: Check workspace permissions
-const { data: members } = await supabase
-  .from('workspace_members')
-  .select('*')
-  .eq('workspace_id', 'ws-uuid')
-  .eq('user_id', 'user-uuid')
-
-// Phase 3: Create task from template
-const template = await supabase
-  .from('task_templates')
-  .select('template_data')
-  .eq('id', 'tpl-uuid')
-  .single()
 ```
-
----
-
-**Ready to Execute? Run:** `supabase db push` 🚀

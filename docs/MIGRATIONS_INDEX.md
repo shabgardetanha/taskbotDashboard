@@ -9,7 +9,7 @@
    - سوالات و جوابات عام
    - مثال‌های عملی
 
-2. **[MIGRATION_GUIDE_FA.md](./MIGRATION_GUIDE_FA.md)**
+2. **[MIGRATION_GUIDE_FA.md](./migrations/MIGRATION_GUIDE_FA.md)**
    - راهنمای تفصیلی اجرای Migrations
    - نصب Supabase CLI
    - دستورات مورد نیاز
@@ -43,7 +43,7 @@
    - Implementation priorities
    - Technical details per phase
 
-7. **[.github/copilot-instructions.md](./.github/copilot-instructions.md)**
+7. **[.github/copilot-instructions.md](../.github/copilot-instructions.md)**
    - AI agent guidelines
    - Project conventions
    - Pattern examples
