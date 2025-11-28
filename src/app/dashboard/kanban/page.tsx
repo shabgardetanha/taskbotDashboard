@@ -1,7 +1,8 @@
+'use client'
+// این باید اولین خط باشه — همیشه!
+
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
-
-'use client'
 
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -39,24 +40,25 @@ export default function KanbanPage() {
   )
 
   useEffect(() => {
+    // اگر env نباشه (در build time) — چیزی نکن
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return
+
+    const fetchTasks = async () => {
+      const { data } = await supabase.from('tasks').select('*')
+      setTasks((data as Task[]) || [])
+    }
+
     fetchTasks()
 
     const channel = supabase
       .channel('tasks')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
-        fetchTasks()
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, fetchTasks)
       .subscribe()
 
     return () => {
       supabase.removeChannel(channel)
     }
   }, [])
-
-  const fetchTasks = async () => {
-    const { data } = await supabase.from('tasks').select('*')
-    setTasks((data as Task[]) || [])
-  }
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
@@ -65,7 +67,6 @@ export default function KanbanPage() {
     const taskId = Number(active.id)
     const newStatus = over.id as keyof typeof columns
 
-    // فقط این خط رو با as any بستیم — فقط این یک جا کافیه!
     await supabase
       .from('tasks')
       .update({ status: newStatus } as any)
@@ -79,11 +80,7 @@ export default function KanbanPage() {
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {Object.entries(columns).map(([key, title]) => (
-            <div
-              key={key}
-              id={key}
-              className="bg-gray-100 dark:bg-gray-800 rounded-xl p-6 min-h-96"
-            >
+            <div key={key} id={key} className="bg-gray-100 dark:bg-gray-800 rounded-xl p-6 min-h-96">
               <h2 className="font-bold text-lg mb-4 text-center">{title}</h2>
               <div className="space-y-4">
                 {tasks
