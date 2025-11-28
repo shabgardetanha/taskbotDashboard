@@ -1,16 +1,8 @@
 // src/lib/supabase.ts
-import { createBrowserClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@supabase/supabase-js'
 
-// فقط برای کلاینت (در کامپوننت‌ها و page.tsx)
-export const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-// برای API routes جداگانه استفاده کن (مثل route.ts)
-export const createSupabaseServerClient = () => {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
-}
+// کلاینت عمومی — برای کلاینت و سرور هر دو کار می‌کنه
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
