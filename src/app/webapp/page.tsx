@@ -13,6 +13,20 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 
 type Task = { id: number; title: string; status: string; priority: string; created_at: string }
 
+// تعریف تایپ تلگرام تا TypeScript سکته نکند
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp?: {
+        ready: () => void
+        expand: () => void
+        setHeaderColor: (color: string) => void
+        setBackgroundColor: (color: string) => void
+      }
+    }
+  }
+}
+
 export default function TelegramWebAppPro() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [newTask, setNewTask] = useState('')
