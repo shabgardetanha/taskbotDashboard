@@ -8,7 +8,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-} from '@hello-pangea/dnd'
+} from '@dnd-kit/core'
 
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -32,7 +32,11 @@ export default function KanbanPage() {
   const [tasks, setTasks] = useState<Task[]>([])
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // جلوگیری از drag تصادفی
+      },
+    }),
     useSensor(KeyboardSensor)
   )
 
@@ -73,13 +77,13 @@ export default function KanbanPage() {
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {Object.entries(columns).map(([key, title]) => (
-            <div key={key} id={key} className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+            <div key={key} data-droppable-id={key} className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 min-h-[400px]">
               <h2 className="font-bold text-lg mb-4">{title}</h2>
               <div className="space-y-3">
                 {tasks
                   .filter(t => t.status === key)
                   .map(task => (
-                    <Card key={task.id} className="cursor-move">
+                    <Card key={task.id} data-draggable-id={task.id} className="cursor-move">
                       <CardHeader className="pb-3">
                         <CardTitle className="text-sm">{task.title}</CardTitle>
                       </CardHeader>
