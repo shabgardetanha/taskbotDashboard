@@ -3,7 +3,7 @@
 
 -- 1. Create workspaces table
 CREATE TABLE IF NOT EXISTS workspaces (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   name text not null,
   description text,
   owner_id uuid not null references profiles(id) on delete cascade,
@@ -26,7 +26,7 @@ ALTER TABLE task_labels ADD COLUMN IF NOT EXISTS workspace_id uuid references wo
 
 -- 4. Create activity logs table for audit trail
 CREATE TABLE IF NOT EXISTS activity_logs (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   workspace_id uuid not null references workspaces(id) on delete cascade,
   task_id bigint references tasks(id) on delete set null,
   user_id uuid not null references profiles(id) on delete cascade,
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS activity_logs (
 
 -- 5. Create boards table (Kanban columns)
 CREATE TABLE IF NOT EXISTS boards (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   workspace_id uuid not null references workspaces(id) on delete cascade,
   name text not null,
   order_index integer default 0,
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS boards (
 
 -- 6. Create board columns (todo, inprogress, done, or custom)
 CREATE TABLE IF NOT EXISTS board_columns (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   board_id uuid not null references boards(id) on delete cascade,
   name text not null,
   status_value text not null,
@@ -64,6 +64,8 @@ CREATE INDEX IF NOT EXISTS idx_activity_logs_workspace ON activity_logs(workspac
 CREATE INDEX IF NOT EXISTS idx_activity_logs_task ON activity_logs(task_id);
 CREATE INDEX IF NOT EXISTS idx_activity_logs_user ON activity_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_boards_workspace ON boards(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_status_workspace ON tasks(status, workspace_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_assignee_workspace ON tasks(assignee_id, workspace_id);
 
 -- 8. Enable RLS on new tables
 ALTER TABLE workspaces ENABLE ROW LEVEL SECURITY;

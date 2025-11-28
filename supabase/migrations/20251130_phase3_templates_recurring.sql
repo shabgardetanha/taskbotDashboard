@@ -3,7 +3,7 @@
 
 -- 1. Create task templates table
 CREATE TABLE IF NOT EXISTS task_templates (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   workspace_id uuid not null references workspaces(id) on delete cascade,
   name text not null,
   description text,
@@ -15,16 +15,14 @@ CREATE TABLE IF NOT EXISTS task_templates (
 );
 
 -- 2. Add recurring task fields to tasks table
-ALTER TABLE tasks ADD COLUMN IF NOT EXISTS (
-  is_recurring boolean default false,
-  recurrence_rule text,
-  recurrence_next_date date,
-  original_task_id bigint references tasks(id) on delete set null
-);
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS is_recurring boolean default false;
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS recurrence_rule text;
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS recurrence_next_date date;
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS original_task_id bigint references tasks(id) on delete set null;
 
 -- 3. Create recurring task instances history
 CREATE TABLE IF NOT EXISTS recurring_task_instances (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   original_task_id bigint not null references tasks(id) on delete cascade,
   instance_task_id bigint not null references tasks(id) on delete cascade,
   instance_date date not null,
@@ -33,7 +31,7 @@ CREATE TABLE IF NOT EXISTS recurring_task_instances (
 
 -- 4. Create cron logs for tracking recurring task generation
 CREATE TABLE IF NOT EXISTS cron_logs (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   job_name text not null,
   last_run timestamp with time zone,
   next_run timestamp with time zone,
@@ -52,7 +50,7 @@ CREATE TABLE IF NOT EXISTS task_dependencies (
 
 -- 6. Create task time tracking table (for future burndown charts)
 CREATE TABLE IF NOT EXISTS task_time_logs (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   task_id bigint not null references tasks(id) on delete cascade,
   user_id uuid not null references profiles(id) on delete cascade,
   time_spent integer not null,
