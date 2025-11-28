@@ -47,7 +47,7 @@ bot.command('dashboard', (ctx) => {
   ctx.reply('داشبورد حرفه‌ای شما', {
     reply_markup: {
       inline_keyboard: [[
-        { text: 'باز کردن داشبورد', web_app: { url: 'https://taskbotdashboard.up.railway.app/webapp' } }
+        { text: 'باز کردن داشبورد', web_app: { url: 'https://taskbotdashboard-production.up.railway.app/webapp' } }
       ]]
     }
   })

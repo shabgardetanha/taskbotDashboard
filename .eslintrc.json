@@ -1,3 +1,18 @@
 {
-  "extends": ["next/core-web-vitals"]
+  "extends": ["next", "react", "eslint:recommended"],
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "project": "./tsconfig.json",
+    "tsconfigRootDir": __dirname
+  },
+  "env": {
+    "browser": true
+  },
+  // گزینه extensions حذف شده است!
+  // "extensions": [".ts", ".tsx"] --> حذف کنید
+  "rules": {
+    // تنظیمات سفارشی شما...
+  }
 }
