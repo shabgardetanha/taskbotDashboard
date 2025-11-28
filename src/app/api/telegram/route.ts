@@ -40,7 +40,14 @@ bot.command('new', async (ctx) => {
   const text = ctx.message.text.replace('/new', '').trim()
   if (!text) return ctx.reply('عنوان وظیفه رو بنویسید! مثال: /new خرید سرور جدید')
 
-  const user = await getOrCreateUser(ctx.from)
+  interface Profile {
+    id: string
+    telegram_id: number
+    username?: string
+    full_name: string
+  }
+
+  const user = await getOrCreateUser(ctx.from) as Profile
   const { data } = await supabase
     .from('tasks')
     .insert({
