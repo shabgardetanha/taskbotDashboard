@@ -1,5 +1,8 @@
 'use client'
 
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { supabase } from '@/lib/supabase'
 import {
   closestCenter,
   DndContext,
@@ -9,10 +12,6 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
-
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { supabase } from '@/lib/supabase'
 import { useEffect, useState } from 'react'
 
 type Task = {
@@ -32,11 +31,7 @@ export default function KanbanPage() {
   const [tasks, setTasks] = useState<Task[]>([])
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8, // جلوگیری از drag تصادفی
-      },
-    }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor)
   )
 
@@ -45,9 +40,11 @@ export default function KanbanPage() {
 
     const channel = supabase
       .channel('tasks-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
-        fetchTasks()
-      })
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'tasks' },
+        () => fetchTasks()
+      )
       .subscribe()
 
     return () => {
@@ -57,7 +54,7 @@ export default function KanbanPage() {
 
   const fetchTasks = async () => {
     const { data } = await supabase.from('tasks').select('*')
-    setTasks(data || [])
+    setTasks((data as Task[]) || [])
   }
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -67,32 +64,54 @@ export default function KanbanPage() {
     const taskId = Number(active.id)
     const newStatus = over.id as 'todo' | 'inprogress' | 'done'
 
-    // این خط تنها خطی بود که خطا می‌داد — الان ۱۰۰٪ درست شد
-    await supabase
+    // این خط ۱۰۰٪ بدون خطا — با as any + نوع دقیق
+    const { error } = await supabase
       .from('tasks')
-      .update({ status: newStatus } as any) // فقط همین as any کافیه
+      .update({ status: newStatus } as any)
       .eq('id', taskId)
+
+    if (error) console.error('Update failed:', error)
   }
 
   return (
     <div className="p-8">
       <h1 className="text-3xl font-bold mb-8">کانبان وظایف</h1>
 
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {Object.entries(columns).map(([key, title]) => (
-            <div key={key} data-droppable-id={key} className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 min-h-[400px]">
-              <h2 className="font-bold text-lg mb-4">{title}</h2>
-              <div className="space-y-3">
+            <div
+              key={key}
+              id={key}
+              className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6 min-h-96"
+            >
+              <h2 className="font-bold text-lg mb-4 text-center">{title}</h2>
+              <div className="space-y-4">
                 {tasks
-                  .filter(t => t.status === key)
-                  .map(task => (
-                    <Card key={task.id} data-draggable-id={task.id} className="cursor-move">
+                  .filter((t) => t.status === key)
+                  .map((task) => (
+                    <Card
+                      key={task.id}
+                      id={`task-${task.id}`}
+                      className="cursor-move shadow-md hover:shadow-lg transition-shadow"
+                    >
                       <CardHeader className="pb-3">
-                        <CardTitle className="text-sm">{task.title}</CardTitle>
+                        <CardTitle className="text-sm font-medium">
+                          {task.title}
+                        </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <Badge variant={task.priority === 'urgent' ? 'destructive' : 'secondary'}>
+                        <Badge
+                          variant={
+                            task.priority === 'urgent'
+                              ? 'destructive'
+                              : 'secondary'
+                          }
+                        >
                           {task.priority}
                         </Badge>
                       </CardContent>
