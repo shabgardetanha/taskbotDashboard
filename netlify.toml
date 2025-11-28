@@ -1,0 +1,13 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"  # خودکار API routes رو به functions تبدیل می‌کنه
+
+[functions]
+  node_bundler = "esbuild"  # سریع‌تر و بدون bundling error
+
+[build.environment]
+  NODE_VERSION = "20"  # یا 18 برای stability
+  NETLIFY_NEXT_PLUGIN_SKIP = "false"  # اگر error plugin داری، true کن و redeploy
