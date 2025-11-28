@@ -28,20 +28,60 @@ CREATE TABLE IF NOT EXISTS tasks (
   updated_at timestamp with time zone default now()
 );
 
--- 3. Enable RLS
+-- 3. Enable RLS (safe - will only enable if not already enabled)
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
 
--- 4. Create RLS policies for profiles
-CREATE POLICY "profiles_public_read" ON profiles FOR SELECT USING (true);
-CREATE POLICY "profiles_user_update" ON profiles FOR UPDATE USING (id = auth.uid()) WITH CHECK (id = auth.uid());
+-- 4. Create RLS policies for profiles (safe - use IF NOT EXISTS syntax)
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'profiles' AND policyname = 'profiles_public_read') THEN
+    CREATE POLICY "profiles_public_read" ON profiles FOR SELECT USING (true);
+  END IF;
+END
+$$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'profiles' AND policyname = 'profiles_user_update') THEN
+    CREATE POLICY "profiles_user_update" ON profiles FOR UPDATE USING (id = auth.uid()) WITH CHECK (id = auth.uid());
+  END IF;
+END
+$$;
 
 -- 5. Create RLS policies for tasks
 -- Public read for all tasks
-CREATE POLICY "tasks_public_read" ON tasks FOR SELECT USING (true);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'tasks' AND policyname = 'tasks_public_read') THEN
+    CREATE POLICY "tasks_public_read" ON tasks FOR SELECT USING (true);
+  END IF;
+END
+$$;
+
 -- Authenticated users can create tasks
-CREATE POLICY "tasks_authenticated_create" ON tasks FOR INSERT WITH CHECK (auth.role() = 'authenticated' OR auth.role() = 'service_role');
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'tasks' AND policyname = 'tasks_authenticated_create') THEN
+    CREATE POLICY "tasks_authenticated_create" ON tasks FOR INSERT WITH CHECK (auth.role() = 'authenticated' OR auth.role() = 'service_role');
+  END IF;
+END
+$$;
+
 -- Users can update their assigned tasks
-CREATE POLICY "tasks_user_update" ON tasks FOR UPDATE USING (assignee_id = auth.uid() OR auth.role() = 'service_role') WITH CHECK (assignee_id = auth.uid() OR auth.role() = 'service_role');
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'tasks' AND policyname = 'tasks_user_update') THEN
+    CREATE POLICY "tasks_user_update" ON tasks FOR UPDATE USING (assignee_id = auth.uid() OR auth.role() = 'service_role') WITH CHECK (assignee_id = auth.uid() OR auth.role() = 'service_role');
+  END IF;
+END
+$$;
+
 -- Users can delete their assigned tasks
-CREATE POLICY "tasks_user_delete" ON tasks FOR DELETE USING (assignee_id = auth.uid() OR auth.role() = 'service_role');
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'tasks' AND policyname = 'tasks_user_delete') THEN
+    CREATE POLICY "tasks_user_delete" ON tasks FOR DELETE USING (assignee_id = auth.uid() OR auth.role() = 'service_role');
+  END IF;
+END
+$$;
