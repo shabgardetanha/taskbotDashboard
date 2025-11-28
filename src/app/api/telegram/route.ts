@@ -1,126 +1,166 @@
-import { supabase } from '@/lib/supabase'
-import { NextRequest, NextResponse } from 'next/server'
-import { Telegraf } from 'telegraf'
+// src/app/api/telegram/route.ts
+import { NextRequest } from 'next/server'
+import { Telegraf, Context } from 'telegraf'
+import { createClient } from '@supabase/supabase-js'
 
-const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN!)
+// === Supabase Server Client (API Route) ===
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY! // فقط در سرور — امن
+)
 
-interface User {
+// === Types ===
+interface TelegramUser {
   id: number
   username?: string
   first_name: string
   last_name?: string
 }
 
-// ذخیره یا دریافت کاربر
-async function getOrCreateUser(tgUser: User) {
-  let { data: profile } = await supabase
+interface Profile {
+  id: string
+  telegram_id: number
+  username?: string | null
+  full_name: string
+}
+
+// === Helper: get or create user ===
+async function getOrCreateUser(tgUser: TelegramUser): Promise<Profile> {
+  let { data = await supabase
     .from('profiles')
-    .select('*')
+    .select('id, telegram_id, username, full_name')
     .eq('telegram_id', tgUser.id)
     .single()
+    .then(res => res.data)
 
-  if (!profile) {
-    const { data } = await supabase
+  if (!data) {
+    const fullName = `${tgUser.first_name} ${tgUser.last_name || ''}`.trim()
+    const insertRes = await supabase
       .from('profiles')
       .insert({
         telegram_id: tgUser.id,
-        username: tgUser.username,
-        full_name: `${tgUser.first_name} ${tgUser.last_name || ''}`.trim()
-      } as any)
+        username: tgUser.username || null,
+        full_name: fullName || 'کاربر ناشناس',
+      })
       .select()
       .single()
-    profile = data
+
+    data = insertRes.data
   }
-  return profile
+
+  // اگر به هر دلیلی null بود (خیلی نادر)، خطا می‌دیم
+  if (!data) throw new Error('Failed to create or fetch user profile')
+
+  return data as Profile
 }
 
-bot.start((ctx) => ctx.reply('به سیستم مدیریت وظایف خوش آمدید!\nدستورات:\n/new عنوان\n/mytasks\n/done 123\n/priority 123 high'))
+// === Bot Setup ===
+const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN!)
 
-bot.command('new', async (ctx) => {
-  const text = ctx.message.text.replace('/new', '').trim()
-  if (!text) return ctx.reply('عنوان وظیفه رو بنویسید! مثال: /new خرید سرور جدید')
+bot.start(ctx => ctx.reply('سلام! به ربات مدیریت وظایف خوش اومدی 🚀\nدستورات: /new, /mytasks, /done, /priority'))
 
-  interface Profile {
-    id: string
-    telegram_id: number
-    username?: string
-    full_name: string
+bot.command('new', async ctx => {
+  const text = ctx.message?.text?.replace('/new', '').trim()
+  if (!text) return ctx.reply('متن وظیفه رو بعد از /new بنویس')
+
+  try {
+    const user = await getOrCreateUser(ctx.from as TelegramUser)
+
+    const { data: task } = await supabase
+      .from('tasks')
+      .insert({
+        title: text,
+        assignee_id: user.id,
+        status: 'todo',
+        priority: 'medium',
+      })
+      .select()
+      .single()
+
+    ctx.reply(`وظیفه جدید اضافه شد ✅\n#${task.data.id} | ${text}`)
+  } catch (error) {
+    ctx.reply('خطا در اضافه کردن وظیفه')
+    console.error(error)
   }
-
-  const user = await getOrCreateUser(ctx.from)
-    if (!user) return ctx.reply('خطا در شناسایی کاربر!')
-
-  const { data } = await supabase
-    .from('tasks')
-    .insert({
-      title: text,
-      assignee_id: user!.id
-    } as any)
-    .select()
-    .single()
-
-  ctx.reply(`وظیفه #${data.id} اضافه شد`)
 })
 
-bot.command('mytasks', async (ctx) => {
-  const user = await getOrCreateUser(ctx.from)
-  const { data: tasks } = await supabase
-    .from('tasks')
-    .select('id, title, status, priority')
-    .eq('assignee_id', user.id)
-    .order('created_at', { ascending: false })
+bot.command('mytasks', async ctx => {
+  try {
+    const user = await getOrCreateUser(ctx.from as TelegramUser)
 
-  if (!tasks?.length) return ctx.reply('هیچ وظیفه‌ای ندارید!')
+    const { data: tasks } = await supabase
+      .from('tasks')
+      .select('id, title, status, priority')
+      .eq('assignee_id', user.id)
+      .order('created_at', { ascending: false })
 
-  const message = tasks
-    .map((t: { id: number; title: string; status: string; priority: string }) =>
-      `• #${t.id} | ${t.title}\n   وضعیت: ${t.status} | اولویت: ${t.priority}`
-    )
-    .join('\n\n')
+    if (!tasks?.length) return ctx.reply('هیچ وظیفه‌ای ندارید!'))
 
-  ctx.reply(`وظایف شما:\n\n${message}`)
-})
+    const message = tasks
+      .map(t => `• #${t.id} | ${t.title}\n   وضعیت: ${t.status} | اولویت: ${t.priority}`)
+      .join('\n\n')
 
-bot.command('done (.+)', async (ctx) => {
-  const match = ctx.match[1]
-  const taskId = parseInt(match)
-  const user = await getOrCreateUser(ctx.from)
-
-  const { data: task } = await supabase
-    .from('tasks')
-    .select('id, title')
-    .eq('id', taskId)
-    .eq('assignee_id', user.id)
-    .single()
-
-  if (!task) return ctx.reply('وظیفه پیدا نشد یا مال شما نیست!')
-
-  await supabase.from('tasks').update({ status: 'done' }).eq('id', taskId)
-  ctx.reply(`وظیفه #${taskId} انجام شد`)
-})
-
-bot.command('priority', async (ctx) => {
-  const args = ctx.message.text.split(' ')
-  if (args.length < 3) return ctx.reply('مثال: /priority 123 high')
-
-  const taskId = parseInt(args[1])
-  const priority = args[2].toLowerCase()
-  if (!['low','medium','high','urgent'].includes(priority)) {
-    return ctx.reply('اولویت معتبر: low, medium, high, urgent')
+    ctx.reply(`وظایف شما:\n\n${message}`)
+  } catch (error) {
+    ctx.reply('خطا در دریافت وظایف')
   }
-
-  await supabase.from('tasks').update({ priority }).eq('id', taskId)
-  ctx.reply(`اولویت وظیفه #${taskId} به ${priority} تغییر کرد`)
 })
 
+bot.command('done', async ctx => {
+  const id = Number(ctx.message?.text?.split(' ')[1])
+  if (!id) return ctx.reply('آیدی وظیفه رو بنویس: /done 1')
 
+  try {
+    const user = await getOrCreateUser(ctx.from as TelegramUser)
+    const { data } = await supabase
+      .from('tasks')
+      .update({ status: 'done' })
+      .eq('id', id)
+      .eq('assignee_id', user.id)
+
+    if (data) ctx.reply(`وظیفه #${id} انجام شد!`)
+    else ctx.reply('وظیفه پیدا نشد یا مال شما نیست')
+  } catch {
+    ctx.reply('خطا در انجام وظیفه')
+  }
+})
+
+bot.command('priority', async ctx => {
+  const parts = ctx.message?.text?.split(' ')
+  if (parts.length < 3) return ctx.reply('استفاده: /priority 1 urgent')
+
+  const [_, idStr, priority] = parts
+  const id = Number(idStr)
+
+  if (!id || !['low', 'medium', 'high', 'urgent'].includes(priority))
+    return ctx.reply('آیدی یا اولویت اشتباهه')
+
+  try {
+    const user = await getOrCreateUser(ctx.from as TelegramUser)
+    const { data } = await supabase
+      .from('tasks')
+      .update({ priority })
+      .eq('id', id)
+      .eq('assignee_id', user.id)
+
+    if (data) ctx.reply(`اولویت وظیفه #${id} به ${priority} تغییر کرد`)
+    else ctx.reply('وظیفه پیدا نشد')
+  } catch {
+    ctx.reply('خطا')
+  }
+})
+
+// === Next.js API Route Handler ===
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     await bot.handleUpdate(body)
-    return NextResponse.json({ status: 'OK' })
+    return new Response('OK', { status: 200 })
   } catch (error) {
-    console.error('Telegram handler error:', error)
-    return NextResponse.json({ error: 'Failed' }, { status: 500 })
+    console.error('Telegram webhook error:', error)
+    return new Response('Error', { status: 500 })
   }
 }
+
+// برای جلوگیری از cold start در بعضی پلتفرم‌ها
+export const dynamic = 'force-dynamic'
