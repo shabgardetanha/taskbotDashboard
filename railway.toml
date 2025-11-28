@@ -1,0 +1,14 @@
+[build]
+builder = "NIXPACKS"  # اجباری برای Next.js، Railpack رو bypass می‌کنه
+buildCommand = "npm ci && npm run build"
+
+[deploy]
+startCommand = "npm start"  # برای production server
+
+# اگر Prisma داری، migration رو اضافه کن
+[build]
+beforeBuildCommand = "npx prisma generate"
+
+# Node version (مهم!)
+[build]
+nixpacksPlan = { providers = [{ name = "nodejs", version = "20" }] }
