@@ -56,7 +56,13 @@ bot.command('dashboard', (ctx) => {
 // دستورات ربات
 bot.start((ctx) => ctx.reply(
   'سلام به TaskBot Persian خوش اومدی!\n\n' +
-  'دستورات:\n/new خرید نون\n/mytasks\n/done 1\n/dashboard → وب‌اپ حرفه‌ای'
+  'دستورات:\n' +
+  '/new متن ← وظیفه جدید\n' +
+  '/mytasks ← وظایف شما\n' +
+  '/done 1 ← تمام کردن\n' +
+  '/overdue ← وظایف معوق\n' +
+  '/today ← وظایف امروز\n' +
+  '/dashboard → وب‌اپ حرفه‌ای'
 ))
 
 bot.command('new', async (ctx) => {
@@ -108,6 +114,47 @@ bot.command('done', async (ctx) => {
 
     ctx.reply(error ? 'وظیفه مال شما نیست' : `وظیفه #${id} انجام شد`)
   } catch {
+    ctx.reply('خطا')
+  }
+})
+
+// دستور: وظایف معوق
+bot.command('overdue', async (ctx) => {
+  try {
+    const user = await getOrCreateUser(ctx.from!)
+    const today = new Date().toISOString().split('T')[0]
+    const { data: overdue } = await supabase
+      .from('tasks')
+      .select('id, title, due_date, priority')
+      .eq('assignee_id', user.id)
+      .lt('due_date', today)
+      .eq('status', 'todo')
+
+    if (!overdue?.length) return ctx.reply('هیچ وظیفه معوق نیست!')
+
+    const msg = overdue.map(t => `#${t.id} | ${t.title} (${t.due_date}) | ${t.priority}`).join('\n')
+    ctx.reply(`⚠️ وظایف معوق (${overdue.length}):\n${msg}`)
+  } catch (e) {
+    ctx.reply('خطا')
+  }
+})
+
+// دستور: وظایف امروز
+bot.command('today', async (ctx) => {
+  try {
+    const user = await getOrCreateUser(ctx.from!)
+    const today = new Date().toISOString().split('T')[0]
+    const { data: todayTasks } = await supabase
+      .from('tasks')
+      .select('id, title, status, priority')
+      .eq('assignee_id', user.id)
+      .eq('due_date', today)
+
+    if (!todayTasks?.length) return ctx.reply('هیچ وظیفه برای امروز نیست!')
+
+    const msg = todayTasks.map(t => `#${t.id} | ${t.title} (${t.status}) | ${t.priority}`).join('\n')
+    ctx.reply(`📅 وظایف امروز (${todayTasks.length}):\n${msg}`)
+  } catch (e) {
     ctx.reply('خطا')
   }
 })
