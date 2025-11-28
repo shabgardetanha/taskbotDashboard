@@ -78,7 +78,7 @@ DECLARE
   v_next_date date;
 BEGIN
   SELECT * INTO v_task FROM tasks WHERE id = task_id AND is_recurring = true;
-  
+
   IF v_task IS NOT NULL THEN
     -- Calculate next date based on recurrence rule
     -- Simple implementation: daily, weekly, monthly

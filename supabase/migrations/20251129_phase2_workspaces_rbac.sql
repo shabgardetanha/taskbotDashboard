@@ -97,7 +97,7 @@ CREATE POLICY "users can view workspace members" ON workspace_members
 CREATE POLICY "admins/owners can manage members" ON workspace_members
   FOR ALL USING (
     workspace_id IN (
-      SELECT workspace_id FROM workspace_members 
+      SELECT workspace_id FROM workspace_members
       WHERE user_id = auth.uid() AND role IN ('admin', 'owner')
     )
   );

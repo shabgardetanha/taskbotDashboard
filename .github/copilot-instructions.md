@@ -76,6 +76,7 @@
 # New Features (Phases 1-4 Implementation)
 
 ## Phase 1: Extended Task System
+
 - New fields: `due_date`, `due_time`, `description`, `parent_task_id`, `subtask_count`/`subtask_completed`
 - New tables: `task_labels`, `task_label_links`, `subtasks`
 - New components: `TaskDetailModal.tsx`, `TaskFilters.tsx`
@@ -83,6 +84,7 @@
 - Migration: `20251128_phase1_extended_tasks.sql`
 
 ## Phase 2: Workspaces & Collaboration
+
 - New tables: `workspaces`, `workspace_members`, `boards`, `board_columns`, `activity_logs`
 - Role-based access (owner, admin, member, viewer) with RLS policies
 - Audit trail: tracks all task changes with user attribution
@@ -90,12 +92,14 @@
 - Migration: `20251129_phase2_workspaces_rbac.sql`
 
 ## Phase 3: Templates & Recurring Tasks
+
 - New tables: `task_templates`, `recurring_task_instances`, `task_dependencies`, `task_time_logs`
 - Recurring tasks with daily/weekly/monthly rules (uses `generate_recurring_task_instance()` function)
 - Task templates for quick creation
 - Migration: `20251130_phase3_templates_recurring.sql`
 
 ## Phase 4: Advanced Features
+
 - Calendar view: `/dashboard/calendar/page.tsx` displays tasks by due_date
 - Advanced search with filtering on priority, status, labels, date ranges
 - Enhanced Telegram commands: `/overdue`, `/today` (in addition to existing `/new`, `/mytasks`, `/done`)
