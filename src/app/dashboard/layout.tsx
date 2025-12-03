@@ -22,6 +22,7 @@ import {
   UserCog
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { WorkspaceHeader } from '@/components/WorkspaceSelector'
 
 const navigation = [
   { name: 'خانه', href: '/', icon: Home, color: 'text-blue-600', bgColor: 'bg-blue-50 dark:bg-blue-900/20' },
