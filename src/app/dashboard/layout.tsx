@@ -18,7 +18,8 @@ import {
   Moon,
   Sun,
   Plus,
-  Zap
+  Zap,
+  UserCog
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
@@ -238,9 +239,9 @@ export default function DashboardLayout({
                   <Bell className="w-4 h-4 text-gray-500" />
                   <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
                 </button>
-                <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 hover:scale-110">
+                <Link href="/dashboard/settings" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 hover:scale-110">
                   <Settings className="w-4 h-4 text-gray-500" />
-                </button>
+                </Link>
               </div>
             </div>
           </div>
