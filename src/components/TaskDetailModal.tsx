@@ -166,19 +166,27 @@ export function TaskDetailModal({ task, isOpen, onClose, onUpdate }: TaskDetailM
   if (!isOpen || !task || !editedTask) return null
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in-0 duration-300">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-hidden animate-in zoom-in-95 duration-300">
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b dark:border-gray-800">
-          <div className="flex items-center gap-3">
-            <CheckSquare className="w-6 h-6 text-blue-500" />
+        <div className="flex justify-between items-center p-8 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-blue-500 rounded-xl shadow-lg">
+              <CheckSquare className="w-6 h-6 text-white" />
+            </div>
             <div>
-              <h2 className="text-xl font-bold">وظیفه #{task.id}</h2>
-              <p className="text-sm text-gray-500">ایجاد شده در {new Date(task.created_at || '').toLocaleDateString('fa-IR')}</p>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">وظیفه #{task.id}</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                ایجاد شده در {new Date(task.created_at || '').toLocaleDateString('fa-IR')}
+              </p>
             </div>
           </div>
-          <button onClick={onClose} className="hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-lg">
-            <X size={20} />
+          <button
+            onClick={onClose}
+            className="hover:bg-red-100 dark:hover:bg-red-900/20 p-3 rounded-xl transition-all duration-200 hover:scale-110"
+          >
+            <X size={24} className="text-gray-500 hover:text-red-500" />
           </button>
         </div>
 

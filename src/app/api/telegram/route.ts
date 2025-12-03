@@ -734,7 +734,6 @@ bot.command('bulk', async (ctx) => {
 
   try {
     const user = await getOrCreateUser(ctx.from!)
-    let query = supabase.from('tasks').eq('assignee_id', user.id)
     let description = ''
 
     if (action === 'done') {
@@ -750,27 +749,28 @@ bot.command('bulk', async (ctx) => {
         return ctx.reply('پارامتر نامعتبر. استفاده: `/bulk done today` یا `/bulk done all`')
       }
 
-      const { count, error } = await bulkQuery.select('*', { count: 'exact', head: true })
+      const { error } = await bulkQuery
 
       if (error) throw error
 
-      ctx.reply(`✅ ${count} ${description} به عنوان تکمیل شده علامت‌گذاری شدند`)
+      ctx.reply(`✅ ${description} به عنوان تکمیل شده علامت‌گذاری شدند`)
     }
     else if (action === 'status') {
       if (!['todo', 'inprogress', 'done'].includes(status)) {
         return ctx.reply('وضعیت نامعتبر. استفاده: todo, inprogress, done')
       }
 
-      const { count, error } = await query
+      const { error } = await supabase
+        .from('tasks')
         .update({ status })
-        .select('*', { count: 'exact', head: true })
+        .eq('assignee_id', user.id)
 
       if (error) throw error
 
       const statusText = status === 'todo' ? 'در انتظار' :
                         status === 'inprogress' ? 'در حال انجام' : 'انجام شده'
 
-      ctx.reply(`📊 وضعیت ${count} وظیفه به "${statusText}" تغییر یافت`)
+      ctx.reply(`📊 وضعیت همه وظایف به "${statusText}" تغییر یافت`)
     }
     else {
       ctx.reply('اقدام نامعتبر. از `/bulk` برای دیدن گزینه‌ها استفاده کنید')
@@ -780,141 +780,14 @@ bot.command('bulk', async (ctx) => {
   }
 })
 
-// Callback query handlers for inline buttons
-bot.on('callback_query', async (ctx) => {
-  try {
-    const callbackData = ctx.callbackQuery.data
-    if (callbackData?.startsWith('task_')) {
-      ctx.answerCbQuery()
-
-      const taskId = Number(callbackData.replace('task_', ''))
-
-      // Get task details directly
-      const user = await getOrCreateUser(ctx.from!)
-      const { data: task } = await supabase
-        .from('tasks')
-        .select(`
-          id, title, description, status, priority, due_date, due_time,
-          labels:task_label_links(label:task_labels(name, color))
-        `)
-        .eq('id', taskId)
-        .eq('assignee_id', user.id)
-        .single()
-
-      if (!task) {
-        ctx.reply('وظیفه یافت نشد یا مال شما نیست')
-        return
-      }
-
-      const labels = task.labels?.map((l: any) => l.label?.name).join(', ') || 'بدون برچسب'
-      let msg = `📋 وظیفه #${task.id}: ${task.title}\n\n`
-      if (task.description) msg += `📝 ${task.description}\n\n`
-      msg += `🏷️ برچسب‌ها: ${labels}\n`
-      msg += `🎯 اولویت: ${task.priority === 'urgent' ? 'فوری' : task.priority === 'high' ? 'زیاد' : task.priority === 'medium' ? 'متوسط' : 'کم'}\n`
-      msg += `📊 وضعیت: ${task.status === 'todo' ? 'در انتظار' : task.status === 'inprogress' ? 'در حال انجام' : 'انجام شده'}`
-
-      ctx.reply(msg)
-    }
-    else if (callbackData === 'progress_week') {
-      ctx.answerCbQuery()
-
-      const user = await getOrCreateUser(ctx.from!)
-      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-      const { data: weekTasks } = await supabase
-        .from('tasks')
-        .select('status, created_at')
-        .eq('assignee_id', user.id)
-        .gte('created_at', weekAgo.toISOString())
-
-      const weekStats = {
-        total: weekTasks?.length || 0,
-        completed: weekTasks?.filter(t => t.status === 'done').length || 0
-      }
-
-      const weekRate = weekStats.total > 0 ? Math.round((weekStats.completed / weekStats.total) * 100) : 0
-
-      const msg = `📈 *پیشرفت هفته گذشته:*\n\n` +
-        `• ایجاد شده: ${weekStats.total}\n` +
-        `• تکمیل شده: ${weekStats.completed}\n` +
-        `• نرخ پیشرفت: ${weekRate}%`
-
-      ctx.reply(msg, { parse_mode: 'Markdown' })
-    }
-    else if (callbackData === 'priority_stats') {
-      ctx.answerCbQuery()
-
-      const user = await getOrCreateUser(ctx.from!)
-      const { data: tasks } = await supabase
-        .from('tasks')
-        .select('priority')
-        .eq('assignee_id', user.id)
-
-      const priorityStats = {
-        urgent: tasks?.filter(t => t.priority === 'urgent').length || 0,
-        high: tasks?.filter(t => t.priority === 'high').length || 0,
-        medium: tasks?.filter(t => t.priority === 'medium').length || 0,
-        low: tasks?.filter(t => t.priority === 'low').length || 0
-      }
-
-      const msg = `🎯 *توزیع اولویت‌ها:*\n\n` +
-        `🚨 فوری: ${priorityStats.urgent}\n` +
-        `🔴 زیاد: ${priorityStats.high}\n` +
-        `🟡 متوسط: ${priorityStats.medium}\n` +
-        `🟢 کم: ${priorityStats.low}`
-
-      ctx.reply(msg, { parse_mode: 'Markdown' })
-    }
-    else if (callbackData === 'today_tasks') {
-      ctx.answerCbQuery()
-
-      const user = await getOrCreateUser(ctx.from!)
-      const today = new Date().toISOString().split('T')[0]
-      const { data: todayTasks } = await supabase
-        .from('tasks')
-        .select('id, title, priority')
-        .eq('assignee_id', user.id)
-        .eq('due_date', today)
-        .eq('status', 'todo')
-        .limit(5)
-
-      if (!todayTasks?.length) {
-        ctx.reply('هیچ وظیفه‌ای برای امروز ندارید! ✅')
-        return
-      }
-
-      const msg = `📅 *وظایف امروز (${todayTasks.length}):*\n\n` +
-        todayTasks.map(t => `• #${t.id} ${t.title}`).join('\n')
-
-      ctx.reply(msg, { parse_mode: 'Markdown' })
-    }
-    else if (callbackData === 'overdue_tasks') {
-      ctx.answerCbQuery()
-
-      const user = await getOrCreateUser(ctx.from!)
-      const today = new Date().toISOString().split('T')[0]
-      const { data: overdue } = await supabase
-        .from('tasks')
-        .select('id, title, due_date')
-        .eq('assignee_id', user.id)
-        .lt('due_date', today)
-        .eq('status', 'todo')
-        .limit(5)
-
-      if (!overdue?.length) {
-        ctx.reply('هیچ وظیفه معوق ندارید! 🎉')
-        return
-      }
-
-      const msg = `⚠️ *وظایف معوق (${overdue.length}):*\n\n` +
-        overdue.map(t => `• #${t.id} ${t.title} (${t.due_date})`).join('\n')
-
-      ctx.reply(msg, { parse_mode: 'Markdown' })
-    }
-  } catch (e) {
-    console.error('Callback error:', e)
-    ctx.answerCbQuery('خطا در پردازش درخواست')
-  }
-})
+// Callback query handlers for inline buttons (simplified for now)
+// bot.on('callback_query', async (ctx) => {
+//   try {
+//     ctx.answerCbQuery('این قابلیت به زودی اضافه خواهد شد!')
+//   } catch (e) {
+//     console.error('Callback error:', e)
+//   }
+// })
 
 // وب‌هوک
 export async function POST(req: NextRequest) {
