@@ -14,12 +14,12 @@ import { Calendar, CheckSquare, Clock, Plus, RefreshCw, Users, Filter, ArrowUpDo
 import {
   closestCenter,
   DndContext,
-  DragEndEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
+import type { DragEndEvent } from '@dnd-kit/core'
 import { useEffect, useState, useCallback } from 'react'
 
 type Task = {
