@@ -8,7 +8,7 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 
 // GET - Fetch time logs for a task
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {

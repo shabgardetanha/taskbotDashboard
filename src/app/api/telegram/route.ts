@@ -125,6 +125,7 @@ bot.command('new', async (ctx) => {
   } catch (e) {
     ctx.reply('خطا')
   }
+  return
 })
 
 bot.command('mytasks', async (ctx) => {
@@ -142,6 +143,7 @@ bot.command('mytasks', async (ctx) => {
   } catch {
     ctx.reply('خطا')
   }
+  return
 })
 
 bot.command('done', async (ctx) => {
@@ -160,6 +162,7 @@ bot.command('done', async (ctx) => {
   } catch {
     ctx.reply('خطا')
   }
+  return
 })
 
 // دستور: وظایف معوق
@@ -181,6 +184,7 @@ bot.command('overdue', async (ctx) => {
   } catch (e) {
     ctx.reply('خطا')
   }
+  return
 })
 
 // دستور: وظایف امروز
@@ -238,7 +242,7 @@ bot.command('task', async (ctx) => {
     msg += `🎯 اولویت: ${task.priority === 'urgent' ? 'فوری' : task.priority === 'high' ? 'زیاد' : task.priority === 'medium' ? 'متوسط' : 'کم'}\n`
 
     if (task.due_date) {
-      const dueDate = new Date(task.due_date).toLocaleDateString('fa-IR')
+      const dueDate = new Date(task.due_date).toLocaleDateString('fa-IR') || task.due_date
       msg += `📅 مهلت: ${dueDate}`
       if (task.due_time) msg += ` ${task.due_time.slice(0,5)}`
       msg += '\n'
@@ -252,7 +256,7 @@ bot.command('task', async (ctx) => {
       if (subtasks.length > 3) msg += `  ... و ${subtasks.length - 3} زیروظیفه دیگر\n`
     }
 
-    msg += `\n📅 ایجاد شده: ${new Date(task.created_at).toLocaleDateString('fa-IR')}`
+    msg += `\n📅 ایجاد شده: ${new Date(task.created_at).toLocaleDateString('fa-IR') || new Date(task.created_at).toISOString().split('T')[0]}`
 
     ctx.reply(msg)
   } catch (e) {
@@ -546,7 +550,7 @@ bot.command('due', async (ctx) => {
     if (error) return ctx.reply('وظیفه یافت نشد یا مال شما نیست')
 
     const dateObj = new Date(dateStr)
-    const persianDate = dateObj.toLocaleDateString('fa-IR')
+    const persianDate = dateObj.toLocaleDateString('fa-IR') || dateStr
     const response = `📅 مهلت وظیفه #${id} تنظیم شد:\n${persianDate}${timeStr ? ` ساعت ${timeStr}` : ''}`
 
     ctx.reply(response)
