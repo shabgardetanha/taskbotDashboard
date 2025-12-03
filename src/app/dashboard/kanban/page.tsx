@@ -1,13 +1,14 @@
 'use client'
 
 export const dynamic = 'force-dynamic'
-// فقط این یک خط کافیه — revalidate رو حذف کردیم
 
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TaskDetailModal } from '@/components/TaskDetailModal'
+import { KanbanColumnSkeleton, PageLoading, LoadingSpinner } from '@/components/ui/loading'
+import { TaskEmptyState, ErrorState } from '@/components/ui/empty-state'
 import { supabase } from '@/lib/supabase'
-import { Calendar, CheckSquare, Clock } from 'lucide-react'
+import { Calendar, CheckSquare, Clock, Plus, RefreshCw } from 'lucide-react'
 import {
   closestCenter,
   DndContext,
@@ -17,7 +18,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 type Task = {
   id: number
@@ -76,11 +77,43 @@ export default function KanbanPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor)
   )
+
+  const fetchTasks = useCallback(async () => {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return
+
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      const { data, error: fetchError } = await supabase
+        .from('tasks')
+        .select(`
+          *,
+          labels:task_label_links(
+            label:task_labels(*)
+          )
+        `)
+        .order('position', { ascending: true })
+        .order('created_at', { ascending: false })
+
+      if (fetchError) throw fetchError
+
+      setTasks((data as Task[]) || [])
+    } catch (err) {
+      console.error('Error fetching tasks:', err)
+      setError(err instanceof Error ? err.message : 'خطا در بارگذاری وظایف')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
 
   const handleTaskClick = (task: Task) => {
     setSelectedTask(task)
@@ -102,49 +135,34 @@ export default function KanbanPage() {
       if (error) throw error
 
       // Refresh tasks data
-      const { data } = await supabase
-        .from('tasks')
-        .select(`
-          *,
-          labels:task_label_links(
-            label:task_labels(*)
-          )
-        `)
-      setTasks((data as Task[]) || [])
+      await fetchTasks()
     } catch (error) {
       console.error('Error updating task:', error)
+      setError('خطا در بروزرسانی وظیفه')
       throw error
     }
   }
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    await fetchTasks()
+    setIsRefreshing(false)
+  }
+
   useEffect(() => {
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return
-
-    const fetchTasks = async () => {
-      const { data } = await supabase
-        .from('tasks')
-        .select(`
-          *,
-          labels:task_label_links(
-            label:task_labels(*)
-          )
-        `)
-        .order('position', { ascending: true })
-        .order('created_at', { ascending: false })
-      setTasks((data as Task[]) || [])
-    }
-
     fetchTasks()
 
     const channel = supabase
       .channel('tasks')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, fetchTasks)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
+        fetchTasks()
+      })
       .subscribe()
 
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [])
+  }, [fetchTasks])
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
@@ -239,7 +257,38 @@ export default function KanbanPage() {
         </div>
       </div>
 
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      {/* Loading State */}
+      {isLoading && !isRefreshing && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <KanbanColumnSkeleton title="در انتظار" />
+          <KanbanColumnSkeleton title="در حال انجام" />
+          <KanbanColumnSkeleton title="انجام شده" />
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && !isLoading && (
+        <ErrorState
+          title="خطا در بارگذاری وظایف"
+          description={error}
+          onRetry={handleRefresh}
+        />
+      )}
+
+      {/* Empty State */}
+      {!isLoading && !error && tasks.length === 0 && (
+        <TaskEmptyState
+          variant="all-tasks"
+          onCreateTask={() => {
+            // TODO: Implement task creation modal
+            console.log('Create task clicked')
+          }}
+        />
+      )}
+
+      {/* Kanban Board */}
+      {!isLoading && !error && tasks.length > 0 && (
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {Object.entries(columns).map(([key, title]) => {
             const columnTasks = tasks.filter((t) => t.status === key)
@@ -371,7 +420,8 @@ export default function KanbanPage() {
             )
           })}
         </div>
-      </DndContext>
+        </DndContext>
+      )}
 
       {/* Task Detail Modal */}
       <TaskDetailModal
