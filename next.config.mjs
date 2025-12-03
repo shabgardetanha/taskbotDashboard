@@ -6,16 +6,11 @@ const nextConfig = {
 
   // React 19 and Next.js 15 optimizations
   experimental: {
-    // Enable React Compiler for automatic optimizations
-    reactCompiler: true,
-
     // Optimize package imports for better tree shaking
     optimizePackageImports: [
       'lucide-react',
       '@radix-ui/react-icons',
-      'framer-motion',
-      'zustand',
-      '@tanstack/react-query'
+      'framer-motion'
     ],
 
     // Webpack build worker for faster builds
