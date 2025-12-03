@@ -1,6 +1,5 @@
-'use client'
-
 import { Button } from '@/components/ui/button'
+import type { Metadata } from 'next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -17,6 +16,17 @@ import {
   Clock,
   Smartphone
 } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'TaskBot Persian - مدیریت وظایف هوشمند',
+  description: 'پلتفرم مدیریت وظایف هوشمند با ربات تلگرام و سیستم کانبان پیشرفته. تجربه‌ای بی‌نظیر از بهره‌وری و سازماندهی کارها.',
+  keywords: ['مدیریت وظایف', 'کانبان', 'تلگرام', 'TaskBot', 'برنامه‌ریزی', 'بهره‌وری'],
+  openGraph: {
+    title: 'TaskBot Persian - مدیریت وظایف هوشمند',
+    description: 'پلتفرم مدیریت وظایف با ربات تلگرام و کانبان حرفه‌ای',
+    type: 'website',
+  },
+}
 
 export default function Home() {
   const features = [
