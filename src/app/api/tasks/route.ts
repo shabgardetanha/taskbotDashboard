@@ -8,7 +8,15 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 
 export async function POST(req: NextRequest) {
   try {
-    const { title, telegramId } = await req.json()
+    const {
+      title,
+      telegramId,
+      description,
+      priority,
+      due_date,
+      due_time,
+      workspace_id
+    } = await req.json()
 
     if (!title?.trim()) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
@@ -38,14 +46,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to get user profile' }, { status: 500 })
     }
 
-    // Create task with assignee_id
+    // Create task with new fields
     const { data: task, error } = await supabase
       .from('tasks')
       .insert({
         title: title.trim(),
+        description,
         status: 'todo',
-        priority: 'medium',
+        priority: priority || 'medium',
         assignee_id: profile.id,
+        due_date,
+        due_time,
+        workspace_id: workspace_id || null, // Allow null for backward compatibility
       })
       .select()
       .single()

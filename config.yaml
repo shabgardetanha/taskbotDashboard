@@ -1,0 +1,17 @@
+name: ali
+version: 1.0.0
+schema: v1
+models:
+  - name: qwen2.5-coder-cline:7b-instruct-q8_0
+    provider: ollama
+    model: maryasov/qwen2.5-coder-cline:7b-instruct-q8_0
+    roles:
+    - apply
+    - autocomplete
+    - chat
+    - edit
+    apiBase: https://posologic-marcus-nonsubconscious.ngrok-free.dev
+    apiKey: ali:12345678
+    requestOptions:
+          headers:
+            Authorization: Basic YWxpOjEyMzQ1Njc4

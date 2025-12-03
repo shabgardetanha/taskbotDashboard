@@ -5,7 +5,9 @@ export const dynamic = 'force-dynamic'
 
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { TaskDetailModal } from '@/components/TaskDetailModal'
 import { supabase } from '@/lib/supabase'
+import { Calendar, CheckSquare, Clock } from 'lucide-react'
 import {
   closestCenter,
   DndContext,
@@ -20,8 +22,18 @@ import { useEffect, useState } from 'react'
 type Task = {
   id: number
   title: string
+  description?: string
   priority: string
   status: 'todo' | 'inprogress' | 'done'
+  due_date?: string
+  due_time?: string
+  labels?: Array<{
+    id: string
+    name: string
+    color: string
+  }>
+  subtask_count?: number
+  subtask_completed?: number
 }
 
 const columns = {
@@ -30,19 +42,93 @@ const columns = {
   done: 'انجام شده',
 } as const
 
+// Helper function to get due date status
+const getDueDateStatus = (dueDate?: string) => {
+  if (!dueDate) return null
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const due = new Date(dueDate)
+  due.setHours(0, 0, 0, 0)
+
+  const diffTime = due.getTime() - today.getTime()
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+  if (diffDays < 0) return { status: 'overdue', text: 'گذشته', color: 'text-red-600' }
+  if (diffDays === 0) return { status: 'today', text: 'امروز', color: 'text-yellow-600' }
+  if (diffDays === 1) return { status: 'tomorrow', text: 'فردا', color: 'text-blue-600' }
+  if (diffDays <= 7) return { status: 'this-week', text: `${diffDays} روز`, color: 'text-green-600' }
+  return { status: 'future', text: due.toLocaleDateString('fa-IR'), color: 'text-gray-600' }
+}
+
+// Helper function to format due date display
+const formatDueDate = (dueDate?: string, dueTime?: string) => {
+  if (!dueDate) return null
+  const date = new Date(dueDate).toLocaleDateString('fa-IR')
+  if (dueTime) {
+    const time = dueTime.slice(0, 5) // HH:MM format
+    return `${date} ${time}`
+  }
+  return date
+}
+
 export default function KanbanPage() {
   const [tasks, setTasks] = useState<Task[]>([])
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor)
   )
 
+  const handleTaskClick = (task: Task) => {
+    setSelectedTask(task)
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setSelectedTask(null)
+  }
+
+  const handleUpdateTask = async (taskId: number, updates: any) => {
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update(updates)
+        .eq('id', taskId)
+
+      if (error) throw error
+
+      // Refresh tasks data
+      const { data } = await supabase
+        .from('tasks')
+        .select(`
+          *,
+          labels:task_label_links(
+            label:task_labels(*)
+          )
+        `)
+      setTasks((data as Task[]) || [])
+    } catch (error) {
+      console.error('Error updating task:', error)
+      throw error
+    }
+  }
+
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return
 
     const fetchTasks = async () => {
-      const { data } = await supabase.from('tasks').select('*')
+      const { data } = await supabase
+        .from('tasks')
+        .select(`
+          *,
+          labels:task_label_links(
+            label:task_labels(*)
+          )
+        `)
       setTasks((data as Task[]) || [])
     }
 
@@ -85,13 +171,60 @@ export default function KanbanPage() {
                       key={task.id}
                       id={`${task.id}`}
                       className="cursor-grab active:cursor-grabbing shadow-md hover:shadow-lg transition-shadow"
+                      onClick={() => handleTaskClick(task)}
                     >
                       <CardHeader className="pb-3">
                         <CardTitle className="text-sm font-medium">{task.title}</CardTitle>
                       </CardHeader>
-                      <CardContent>
-                        <Badge variant={task.priority === 'urgent' ? 'destructive' : 'secondary'}>
-                          {task.priority}
+                      <CardContent className="space-y-3">
+                        {/* Labels */}
+                        {task.labels && task.labels.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {task.labels.slice(0, 3).map((labelData) => (
+                              <Badge
+                                key={labelData.id}
+                                variant="outline"
+                                className="text-xs px-2 py-0"
+                                style={{
+                                  borderColor: labelData.color,
+                                  color: labelData.color
+                                }}
+                              >
+                                {labelData.name}
+                              </Badge>
+                            ))}
+                            {task.labels.length > 3 && (
+                              <Badge variant="outline" className="text-xs px-2 py-0">
+                                +{task.labels.length - 3}
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Due Date */}
+                        {task.due_date && (
+                          <div className={`flex items-center gap-1 text-xs ${getDueDateStatus(task.due_date)?.color || 'text-gray-600'}`}>
+                            <Calendar className="w-3 h-3" />
+                            <span>{formatDueDate(task.due_date, task.due_time)}</span>
+                          </div>
+                        )}
+
+                        {/* Subtasks */}
+                        {(task.subtask_count || 0) > 0 && (
+                          <div className="flex items-center gap-1 text-xs text-gray-600">
+                            <CheckSquare className="w-3 h-3" />
+                            <span>{task.subtask_completed || 0}/{task.subtask_count} زیروظیفه</span>
+                          </div>
+                        )}
+
+                        {/* Priority Badge */}
+                        <Badge
+                          variant={task.priority === 'urgent' ? 'destructive' : 'secondary'}
+                          className="text-xs"
+                        >
+                          {task.priority === 'low' ? 'کم' :
+                           task.priority === 'medium' ? 'متوسط' :
+                           task.priority === 'high' ? 'زیاد' : 'فوری'}
                         </Badge>
                       </CardContent>
                     </Card>
@@ -101,6 +234,14 @@ export default function KanbanPage() {
           ))}
         </div>
       </DndContext>
+
+      {/* Task Detail Modal */}
+      <TaskDetailModal
+        task={selectedTask}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onUpdate={handleUpdateTask}
+      />
     </div>
   )
 }
