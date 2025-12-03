@@ -155,83 +155,192 @@ export default function KanbanPage() {
   }
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-8">کانبان وظایف</h1>
-
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {Object.entries(columns).map(([key, title]) => (
-            <div key={key} id={key} className="bg-gray-100 dark:bg-gray-800 rounded-xl p-6 min-h-96">
-              <h2 className="font-bold text-lg mb-4 text-center">{title}</h2>
-              <div className="space-y-4">
-                {tasks
-                  .filter((t) => t.status === key)
-                  .map((task) => (
-                    <Card
-                      key={task.id}
-                      id={`${task.id}`}
-                      className="cursor-grab active:cursor-grabbing shadow-md hover:shadow-lg transition-shadow"
-                      onClick={() => handleTaskClick(task)}
-                    >
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-sm font-medium">{task.title}</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        {/* Labels */}
-                        {task.labels && task.labels.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            {task.labels.slice(0, 3).map((labelData) => (
-                              <Badge
-                                key={labelData.id}
-                                variant="outline"
-                                className="text-xs px-2 py-0"
-                                style={{
-                                  borderColor: labelData.color,
-                                  color: labelData.color
-                                }}
-                              >
-                                {labelData.name}
-                              </Badge>
-                            ))}
-                            {task.labels.length > 3 && (
-                              <Badge variant="outline" className="text-xs px-2 py-0">
-                                +{task.labels.length - 3}
-                              </Badge>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Due Date */}
-                        {task.due_date && (
-                          <div className={`flex items-center gap-1 text-xs ${getDueDateStatus(task.due_date)?.color || 'text-gray-600'}`}>
-                            <Calendar className="w-3 h-3" />
-                            <span>{formatDueDate(task.due_date, task.due_time)}</span>
-                          </div>
-                        )}
-
-                        {/* Subtasks */}
-                        {(task.subtask_count || 0) > 0 && (
-                          <div className="flex items-center gap-1 text-xs text-gray-600">
-                            <CheckSquare className="w-3 h-3" />
-                            <span>{task.subtask_completed || 0}/{task.subtask_count} زیروظیفه</span>
-                          </div>
-                        )}
-
-                        {/* Priority Badge */}
-                        <Badge
-                          variant={task.priority === 'urgent' ? 'destructive' : 'secondary'}
-                          className="text-xs"
-                        >
-                          {task.priority === 'low' ? 'کم' :
-                           task.priority === 'medium' ? 'متوسط' :
-                           task.priority === 'high' ? 'زیاد' : 'فوری'}
-                        </Badge>
-                      </CardContent>
-                    </Card>
-                  ))}
+    <div className="p-8 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
+              کانبان وظایف
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 text-lg">
+              وظایف خود را با drag & drop مدیریت کنید
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                {tasks.length}
+              </div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                کل وظایف
               </div>
             </div>
-          ))}
+            <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg">
+              <CheckSquare className="w-8 h-8 text-white" />
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Bar */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          {Object.entries(columns).map(([key, title]) => {
+            const count = tasks.filter(t => t.status === key).length
+            const percentage = tasks.length > 0 ? Math.round((count / tasks.length) * 100) : 0
+
+            return (
+              <div key={key} className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-4 shadow-lg border border-gray-200/50 dark:border-gray-700/50">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</span>
+                  <span className="text-lg font-bold text-gray-900 dark:text-white">{count}</span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div
+                    className={`h-2 rounded-full transition-all duration-500 ${
+                      key === 'todo' ? 'bg-blue-500' :
+                      key === 'inprogress' ? 'bg-yellow-500' :
+                      'bg-green-500'
+                    }`}
+                    style={{ width: `${percentage}%` }}
+                  />
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {Object.entries(columns).map(([key, title]) => {
+            const columnTasks = tasks.filter((t) => t.status === key)
+            const columnColor = key === 'todo' ? 'blue' : key === 'inprogress' ? 'yellow' : 'green'
+
+            return (
+              <div
+                key={key}
+                id={key}
+                className={`bg-gradient-to-br from-${columnColor}-50 to-${columnColor}-100 dark:from-${columnColor}-900/20 dark:to-${columnColor}-800/20 backdrop-blur-sm rounded-3xl p-6 min-h-96 shadow-xl border border-${columnColor}-200/50 dark:border-${columnColor}-700/50`}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 bg-${columnColor}-500 rounded-xl flex items-center justify-center shadow-lg`}>
+                      <CheckSquare className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="font-bold text-xl text-gray-900 dark:text-white">{title}</h2>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{columnTasks.length} وظیفه</p>
+                    </div>
+                  </div>
+                  <div className={`px-3 py-1 bg-${columnColor}-100 dark:bg-${columnColor}-900/30 text-${columnColor}-700 dark:text-${columnColor}-300 rounded-full text-sm font-medium`}>
+                    {columnTasks.length}
+                  </div>
+                </div>
+
+                <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar">
+                  {columnTasks.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className={`w-16 h-16 bg-${columnColor}-100 dark:bg-${columnColor}-900/20 rounded-2xl flex items-center justify-center mx-auto mb-4`}>
+                        <CheckSquare className={`w-8 h-8 text-${columnColor}-400`} />
+                      </div>
+                      <p className="text-gray-500 dark:text-gray-400 font-medium">
+                        هیچ وظیفه‌ای در این ستون وجود ندارد
+                      </p>
+                    </div>
+                  ) : (
+                    columnTasks.map((task) => (
+                      <Card
+                        key={task.id}
+                        id={`${task.id}`}
+                        className="cursor-grab active:cursor-grabbing hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl border-2 border-transparent hover:border-current/20 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"
+                        onClick={() => handleTaskClick(task)}
+                      >
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-base font-semibold text-gray-900 dark:text-white leading-tight">
+                            {task.title}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          {/* Labels */}
+                          {task.labels && task.labels.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {task.labels.slice(0, 2).map((labelData) => (
+                                <Badge
+                                  key={labelData.id}
+                                  className="text-xs px-2 py-1 font-medium"
+                                  style={{
+                                    backgroundColor: `${labelData.color}20`,
+                                    borderColor: labelData.color,
+                                    color: labelData.color
+                                  }}
+                                >
+                                  {labelData.name}
+                                </Badge>
+                              ))}
+                              {task.labels.length > 2 && (
+                                <Badge variant="outline" className="text-xs px-2 py-1">
+                                  +{task.labels.length - 2}
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Due Date */}
+                          {task.due_date && (
+                            <div className={`flex items-center gap-2 text-sm ${getDueDateStatus(task.due_date)?.color || 'text-gray-600'}`}>
+                              <Calendar className="w-4 h-4" />
+                              <span className="font-medium">{formatDueDate(task.due_date, task.due_time)}</span>
+                            </div>
+                          )}
+
+                          {/* Subtasks Progress */}
+                          {(task.subtask_count || 0) > 0 && (
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between text-sm">
+                                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                  <CheckSquare className="w-4 h-4" />
+                                  <span>زیروظایف</span>
+                                </div>
+                                <span className="font-medium text-gray-900 dark:text-white">
+                                  {task.subtask_completed || 0}/{task.subtask_count}
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                <div
+                                  className="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full transition-all duration-300"
+                                  style={{
+                                    width: `${task.subtask_count ? ((task.subtask_completed || 0) / task.subtask_count) * 100 : 0}%`
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Priority Badge */}
+                          <div className="flex items-center justify-between">
+                            <Badge
+                              variant={task.priority === 'urgent' ? 'destructive' : task.priority === 'high' ? 'warning' : 'secondary'}
+                              className="text-xs px-3 py-1 font-medium"
+                            >
+                              {task.priority === 'low' ? 'کم' :
+                               task.priority === 'medium' ? 'متوسط' :
+                               task.priority === 'high' ? 'زیاد' : 'فوری'}
+                            </Badge>
+
+                            <div className="flex gap-1">
+                              <div className="w-2 h-2 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                              <div className="w-2 h-2 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                              <div className="w-2 h-2 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              </div>
+            )
+          })}
         </div>
       </DndContext>
 
