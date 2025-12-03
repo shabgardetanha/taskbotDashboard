@@ -9,6 +9,7 @@ import { KanbanColumnSkeleton, PageLoading, LoadingSpinner } from '@/components/
 import { TaskEmptyState, ErrorState } from '@/components/ui/empty-state'
 import { WorkspaceSelector } from '@/components/WorkspaceSelector'
 import { supabase } from '@/lib/supabase'
+import { toast } from '@/components/ui/toast'
 import { Calendar, CheckSquare, Clock, Plus, RefreshCw, Users, Filter, ArrowUpDown, Grid3X3 } from 'lucide-react'
 import {
   closestCenter,
@@ -172,6 +173,7 @@ export default function KanbanPage() {
 
     const taskId = Number(active.id)
     const newStatus = over.id as keyof typeof columns
+    const task = tasks.find(t => t.id === taskId)
 
     try {
       // Update task status and position
@@ -198,8 +200,20 @@ export default function KanbanPage() {
         .order('created_at', { ascending: false })
 
       setTasks((data as Task[]) || [])
+
+      // Show success toast
+      toast({
+        title: "وظیفه منتقل شد",
+        description: `"${task?.title}" به "${columns[newStatus]}" منتقل شد`,
+        variant: "success",
+      })
     } catch (error) {
       console.error('Error updating task:', error)
+      toast({
+        title: "خطا در انتقال وظیفه",
+        description: "امکان انتقال وظیفه وجود ندارد. لطفا دوباره تلاش کنید.",
+        variant: "destructive",
+      })
     }
   }
 
