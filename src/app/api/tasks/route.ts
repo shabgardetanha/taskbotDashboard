@@ -15,7 +15,9 @@ export async function POST(req: NextRequest) {
       priority,
       due_date,
       due_time,
-      workspace_id
+      workspace_id,
+      is_recurring,
+      recurrence_rule
     } = await req.json()
 
     if (!title?.trim()) {
@@ -47,18 +49,27 @@ export async function POST(req: NextRequest) {
     }
 
     // Create task with new fields
+    const taskData: any = {
+      title: title.trim(),
+      description,
+      status: 'todo',
+      priority: priority || 'medium',
+      assignee_id: profile.id,
+      due_date,
+      due_time,
+      workspace_id: workspace_id || null, // Allow null for backward compatibility
+    }
+
+    // Add recurring fields if provided
+    if (is_recurring) {
+      taskData.is_recurring = true
+      taskData.recurrence_rule = recurrence_rule
+      taskData.recurrence_next_date = due_date // Set next occurrence to due date initially
+    }
+
     const { data: task, error } = await supabase
       .from('tasks')
-      .insert({
-        title: title.trim(),
-        description,
-        status: 'todo',
-        priority: priority || 'medium',
-        assignee_id: profile.id,
-        due_date,
-        due_time,
-        workspace_id: workspace_id || null, // Allow null for backward compatibility
-      })
+      .insert(taskData)
       .select()
       .single()
 

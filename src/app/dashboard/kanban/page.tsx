@@ -129,6 +129,8 @@ export default function KanbanPage() {
             label:task_labels(*)
           )
         `)
+        .order('position', { ascending: true })
+        .order('created_at', { ascending: false })
       setTasks((data as Task[]) || [])
     }
 
@@ -151,7 +153,34 @@ export default function KanbanPage() {
     const taskId = Number(active.id)
     const newStatus = over.id as keyof typeof columns
 
-    await supabase.from('tasks').update({ status: newStatus } as any).eq('id', taskId)
+    try {
+      // Update task status and position
+      const { data: updatedTask } = await supabase
+        .from('tasks')
+        .update({
+          status: newStatus,
+          position: Date.now() // Use timestamp as position for simple ordering
+        } as any)
+        .eq('id', taskId)
+        .select()
+        .single()
+
+      // Refresh tasks data
+      const { data } = await supabase
+        .from('tasks')
+        .select(`
+          *,
+          labels:task_label_links(
+            label:task_labels(*)
+          )
+        `)
+        .order('position', { ascending: true })
+        .order('created_at', { ascending: false })
+
+      setTasks((data as Task[]) || [])
+    } catch (error) {
+      console.error('Error updating task:', error)
+    }
   }
 
   return (

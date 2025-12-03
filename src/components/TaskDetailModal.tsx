@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
-import { Calendar, CheckSquare, Clock, Plus, X, Edit, Save, Trash2, User } from 'lucide-react'
+import { Calendar, CheckSquare, Clock, Plus, X, Edit, Save, Trash2, User, Play, Pause, Timer } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 interface Task {
@@ -25,6 +25,10 @@ interface Task {
   workspace_id?: string
   created_at?: string
   updated_at?: string
+  is_recurring?: boolean
+  recurrence_rule?: string
+  recurrence_next_date?: string
+  original_task_id?: number
 }
 
 interface ActivityLog {
@@ -49,6 +53,12 @@ export function TaskDetailModal({ task, isOpen, onClose, onUpdate }: TaskDetailM
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([])
   const [newSubtask, setNewSubtask] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [timeLogs, setTimeLogs] = useState<any[]>([])
+  const [totalTime, setTotalTime] = useState(0)
+  const [totalHours, setTotalHours] = useState(0)
+  const [totalMinutes, setTotalMinutes] = useState(0)
+  const [timeSpent, setTimeSpent] = useState('')
+  const [timeNotes, setTimeNotes] = useState('')
 
   useEffect(() => {
     if (task) {
@@ -157,6 +167,55 @@ export function TaskDetailModal({ task, isOpen, onClose, onUpdate }: TaskDetailM
     }
   }
 
+  const loadTimeLogs = async () => {
+    if (!task?.id) return
+
+    try {
+      const response = await fetch(`/api/tasks/${task.id}/time`)
+      const data = await response.json()
+
+      setTimeLogs(data.timeLogs || [])
+      setTotalTime(data.totalTime || 0)
+      setTotalHours(data.totalHours || 0)
+      setTotalMinutes(data.totalMinutes || 0)
+    } catch (error) {
+      console.error('Error loading time logs:', error)
+    }
+  }
+
+  const addTimeLog = async () => {
+    if (!timeSpent || !task?.id) return
+
+    try {
+      const response = await fetch(`/api/tasks/${task.id}/time`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          time_spent: parseInt(timeSpent),
+          unit: 'minutes',
+          notes: timeNotes,
+          user_id: '00000000-0000-0000-0000-000000000000' // Default user for now
+        })
+      })
+
+      if (response.ok) {
+        setTimeSpent('')
+        setTimeNotes('')
+        loadTimeLogs() // Reload time logs
+      }
+    } catch (error) {
+      console.error('Error adding time log:', error)
+    }
+  }
+
+  useEffect(() => {
+    if (task) {
+      loadTimeLogs()
+    }
+  }, [task])
+
   const progressPercent = editedTask?.subtasks
     ? Math.round(
         (editedTask.subtasks.filter(st => st.completed).length / editedTask.subtasks.length) * 100
@@ -249,15 +308,39 @@ export function TaskDetailModal({ task, isOpen, onClose, onUpdate }: TaskDetailM
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-2">مسئول</label>
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-2">نوع</label>
               <div className="flex items-center gap-2">
-                <User className="w-4 h-4 text-gray-400" />
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  {task.assignee?.full_name || 'تعیین نشده'}
-                </span>
+                {editedTask.is_recurring ? (
+                  <Badge variant="secondary" className="text-xs px-2 py-1 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                    🔄 تکراری ({editedTask.recurrence_rule})
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="text-xs px-2 py-1">
+                    یکباره
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
+
+          {/* Recurring Task Info */}
+          {editedTask.is_recurring && (
+            <div className="bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-700/30 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+                <span className="text-sm font-semibold text-purple-700 dark:text-purple-300">وظیفه تکراری</span>
+              </div>
+              <div className="text-sm text-purple-600 dark:text-purple-400">
+                <p>قانون تکرار: <strong>{editedTask.recurrence_rule}</strong></p>
+                {editedTask.recurrence_next_date && (
+                  <p>تاریخ بعدی: <strong>{new Date(editedTask.recurrence_next_date).toLocaleDateString('fa-IR')}</strong></p>
+                )}
+                {editedTask.original_task_id && (
+                  <p>این نمونه از وظیفه اصلی #{editedTask.original_task_id} است</p>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Due Date & Time */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -369,6 +452,52 @@ export function TaskDetailModal({ task, isOpen, onClose, onUpdate }: TaskDetailM
                 </div>
               )) || (
                 <p className="text-sm text-gray-500 italic">زیروظیفه‌ای وجود ندارد</p>
+              )}
+            </div>
+          </div>
+
+          {/* Time Tracking */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                ردیابی زمان ({totalHours}:{totalMinutes.toString().padStart(2, '0')})
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="زمان (دقیقه)"
+                  value={timeSpent}
+                  onChange={(e) => setTimeSpent(e.target.value)}
+                  className="w-24 text-sm"
+                  type="number"
+                />
+                <Input
+                  placeholder="توضیحات"
+                  value={timeNotes}
+                  onChange={(e) => setTimeNotes(e.target.value)}
+                  className="w-32 text-sm"
+                />
+                <Button size="sm" onClick={() => addTimeLog()}>
+                  <Timer className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-2 max-h-32 overflow-y-auto">
+              {timeLogs.length > 0 ? (
+                timeLogs.map((log) => (
+                  <div key={log.id} className="flex items-center justify-between text-xs p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                    <div className="flex items-center gap-2">
+                      <Timer className="w-3 h-3 text-gray-400" />
+                      <span>{log.time_spent} دقیقه</span>
+                      {log.notes && <span className="text-gray-500">- {log.notes}</span>}
+                    </div>
+                    <span className="text-gray-400">
+                      {new Date(log.logged_at).toLocaleDateString('fa-IR')}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500 italic">هیچ زمان‌بندی ثبت نشده</p>
               )}
             </div>
           </div>
