@@ -4,7 +4,6 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from './auth-context'
-import { toast } from '@/components/ui/toast'
 
 interface Workspace {
   id: string
@@ -105,6 +104,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error('Error loading workspaces:', error)
+      const { toast } = await import('@/components/ui/toast')
       toast({
         title: "خطا در بارگذاری تیم‌ها",
         description: error instanceof Error ? error.message : "خطای نامشخص",
@@ -164,6 +164,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       await refreshWorkspaces()
       setCurrentWorkspace(workspace)
 
+      const { toast } = await import('@/components/ui/toast')
       toast({
         title: "تیم ایجاد شد",
         description: `"${name}" با موفقیت ایجاد گردید`,
@@ -171,6 +172,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       })
     } catch (error) {
       console.error('Error creating workspace:', error)
+      const { toast } = await import('@/components/ui/toast')
       toast({
         title: "خطا در ایجاد تیم",
         description: error instanceof Error ? error.message : "خطای نامشخص",
@@ -194,6 +196,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
       await refreshWorkspaces()
 
+      const { toast } = await import('@/components/ui/toast')
       toast({
         title: "تیم بروزرسانی شد",
         description: "تغییرات ذخیره گردید",
@@ -201,6 +204,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       })
     } catch (error) {
       console.error('Error updating workspace:', error)
+      const { toast } = await import('@/components/ui/toast')
       toast({
         title: "خطا در بروزرسانی",
         description: error instanceof Error ? error.message : "خطای نامشخص",
@@ -226,6 +230,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         setCurrentWorkspace(remainingWorkspaces[0] ?? null)
       }
 
+      const { toast } = await import('@/components/ui/toast')
       toast({
         title: "تیم حذف شد",
         description: "تیم و تمام اطلاعات آن حذف گردید",
@@ -233,6 +238,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       })
     } catch (error) {
       console.error('Error deleting workspace:', error)
+      const { toast } = await import('@/components/ui/toast')
       toast({
         title: "خطا در حذف تیم",
         description: error instanceof Error ? error.message : "خطای نامشخص",
@@ -286,6 +292,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
       await refreshMembers()
 
+      const { toast } = await import('@/components/ui/toast')
       toast({
         title: "عضو دعوت شد",
         description: "کاربر جدید به تیم اضافه گردید",
@@ -293,6 +300,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       })
     } catch (error) {
       console.error('Error inviting member:', error)
+      const { toast } = await import('@/components/ui/toast')
       toast({
         title: "خطا در دعوت عضو",
         description: error instanceof Error ? error.message : "خطای نامشخص",
@@ -314,6 +322,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
       await refreshMembers()
 
+      const { toast } = await import('@/components/ui/toast')
       toast({
         title: "نقش بروزرسانی شد",
         description: "نقش عضو تیم تغییر یافت",
@@ -321,6 +330,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       })
     } catch (error) {
       console.error('Error updating member role:', error)
+      const { toast } = await import('@/components/ui/toast')
       toast({
         title: "خطا در بروزرسانی نقش",
         description: error instanceof Error ? error.message : "خطای نامشخص",
@@ -342,6 +352,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
       await refreshMembers()
 
+      const { toast } = await import('@/components/ui/toast')
       toast({
         title: "عضو حذف شد",
         description: "کاربر از تیم حذف گردید",
@@ -349,6 +360,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       })
     } catch (error) {
       console.error('Error removing member:', error)
+      const { toast } = await import('@/components/ui/toast')
       toast({
         title: "خطا در حذف عضو",
         description: error instanceof Error ? error.message : "خطای نامشخص",
