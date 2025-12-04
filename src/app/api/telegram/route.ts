@@ -209,6 +209,7 @@ bot.command('today', async (ctx) => {
   } catch (e) {
     ctx.reply('خطا در دریافت وظایف امروز')
   }
+  return
 })
 
 // دستور: نمایش جزئیات تک وظیفه
@@ -250,7 +251,7 @@ bot.command('task', async (ctx) => {
 
     if (subtasks.length > 0) {
       msg += `✅ زیروظایف: ${completed}/${subtasks.length}\n`
-      subtasks.slice(0, 3).forEach((s: any, i: number) => {
+      subtasks.slice(0, 3).forEach((s: any, _i: number) => {
         msg += `  ${s.completed ? '☑️' : '⬜'} ${s.title}\n`
       })
       if (subtasks.length > 3) msg += `  ... و ${subtasks.length - 3} زیروظیفه دیگر\n`
@@ -760,7 +761,7 @@ bot.command('bulk', async (ctx) => {
       ctx.reply(`✅ ${description} به عنوان تکمیل شده علامت‌گذاری شدند`)
     }
     else if (action === 'status') {
-      if (!['todo', 'inprogress', 'done'].includes(status)) {
+      if (!status || !['todo', 'inprogress', 'done'].includes(status)) {
         return ctx.reply('وضعیت نامعتبر. استفاده: todo, inprogress, done')
       }
 

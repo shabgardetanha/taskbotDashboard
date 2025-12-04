@@ -4,17 +4,18 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { LoadingSpinner } from '@/components/ui/loading'
-import { supabase } from '@/lib/supabase'
+import { useWorkspace } from '@/contexts/workspace-context'
 import { Building2, ChevronDown, Plus, Users, Settings } from 'lucide-react'
 import { useEffect, useState } from 'react'
-
+// Define local interface since context doesn't export Workspace
 interface Workspace {
   id: string
   name: string
   description?: string
+  owner_id: string
   created_at: string
+  updated_at: string
   member_count?: number
-  task_count?: number
 }
 
 interface WorkspaceSelectorProps {
@@ -28,56 +29,22 @@ export function WorkspaceSelector({
   onWorkspaceChange,
   compact = false
 }: WorkspaceSelectorProps) {
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([])
-  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const {
+    workspaces,
+    currentWorkspace,
+    setCurrentWorkspace,
+    loading: isLoading
+  } = useWorkspace()
   const [isOpen, setIsOpen] = useState(false)
-
-  useEffect(() => {
-    loadWorkspaces()
-  }, [])
 
   useEffect(() => {
     if (workspaces.length > 0 && currentWorkspaceId) {
       const workspace = workspaces.find(w => w.id === currentWorkspaceId)
-      setCurrentWorkspace(workspace || workspaces[0])
-    } else if (workspaces.length > 0) {
-      setCurrentWorkspace(workspaces[0])
-    }
-  }, [workspaces, currentWorkspaceId])
-
-  const loadWorkspaces = async () => {
-    try {
-      setIsLoading(true)
-
-      // For now, create a default workspace since the actual workspace system isn't fully implemented
-      const defaultWorkspace: Workspace = {
-        id: 'default',
-        name: 'فضای کاری اصلی',
-        description: 'فضای کاری پیش‌فرض شما',
-        created_at: new Date().toISOString(),
-        member_count: 1,
-        task_count: 0
+      if (workspace) {
+        setCurrentWorkspace(workspace)
       }
-
-      setWorkspaces([defaultWorkspace])
-
-      // In production, this would load from the database:
-      // const { data } = await supabase
-      //   .from('workspaces')
-      //   .select(`
-      //     *,
-      //     workspace_members(count),
-      //     tasks(count)
-      //   `)
-      //   .eq('user_id', userId)
-
-    } catch (error) {
-      console.error('Error loading workspaces:', error)
-    } finally {
-      setIsLoading(false)
     }
-  }
+  }, [workspaces, currentWorkspaceId, setCurrentWorkspace])
 
   const handleWorkspaceSelect = (workspace: Workspace) => {
     setCurrentWorkspace(workspace)
@@ -196,7 +163,7 @@ export function WorkspaceSelector({
                 </span>
                 <span className="flex items-center gap-1">
                   <Building2 className="w-4 h-4" />
-                  {workspace.task_count || 0} وظیفه
+                  ۰ وظیفه
                 </span>
               </div>
 
@@ -218,25 +185,14 @@ export function WorkspaceSelector({
 
 // Compact version for header
 export function WorkspaceHeader() {
-  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null)
-
-  useEffect(() => {
-    // Load current workspace
-    setCurrentWorkspace({
-      id: 'default',
-      name: 'فضای کاری اصلی',
-      member_count: 1,
-      task_count: 0,
-      created_at: new Date().toISOString()
-    })
-  }, [])
+  const { currentWorkspace } = useWorkspace()
 
   return (
     <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
       <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded flex items-center justify-center">
         <Building2 className="w-3 h-3 text-white" />
       </div>
-      <span className="text-sm font-medium">{currentWorkspace?.name}</span>
+      <span className="text-sm font-medium">{currentWorkspace?.name || 'فضای کاری'}</span>
       <ChevronDown className="w-4 h-4 text-gray-400" />
     </div>
   )

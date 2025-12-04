@@ -4,7 +4,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
-import { Calendar, CheckSquare, Clock, Plus, X, Edit, Save, Trash2, User, Play, Pause, Timer } from 'lucide-react'
+import { TaskComments } from '@/components/TaskComments'
+import { TaskAttachments } from '@/components/TaskAttachments'
+import { Calendar, CheckSquare, Clock, Plus, X, Edit, Save, Timer, MessageCircle, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 interface Task {
@@ -517,6 +519,16 @@ export function TaskDetailModal({ task, isOpen, onClose, onUpdate }: TaskDetailM
               </div>
             </div>
           )}
+
+          {/* Comments Section */}
+          <div>
+            <TaskComments taskId={task.id} />
+          </div>
+
+          {/* Attachments Section */}
+          <div>
+            <TaskAttachments taskId={task.id} />
+          </div>
         </div>
 
         {/* Footer */}
