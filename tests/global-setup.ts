@@ -1,5 +1,3 @@
-import { chromium } from '@playwright/test';
-
 // Environment safety check - prevent tests from running in production
 const isProduction = process.env.NODE_ENV === 'production' ||
                     process.env.VERCEL_ENV === 'production' ||

@@ -1,8 +1,17 @@
-# .github/workflows/ai-guardian.yml
-- name: AI Review
-  uses: saoudrizwan/claude-dev-action@v2
-  with:
-    xai-api-key: ${{ secrets.XAI_API_KEY }}  # از GitHub Secrets می‌خونه
-    model: x-ai/grok-code-fast-1
-    prompt-file: .coding-standards/TASKBOT_GUARDIAN.md
-    fail-on-violation: true
+name: AI Guardian
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  ai-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: AI Review
+        uses: saoudrizwan/claude-dev-action@v2
+        with:
+          xai-api-key: ${{ secrets.XAI_API_KEY }}  # از GitHub Secrets می‌خونه
+          model: x-ai/grok-code-fast-1
+          prompt-file: .coding-standards/TASKBOT_GUARDIAN.md
+          fail-on-violation: true

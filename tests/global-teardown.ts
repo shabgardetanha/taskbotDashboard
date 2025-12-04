@@ -1,5 +1,3 @@
-import { chromium } from '@playwright/test';
-
 async function globalTeardown() {
   console.log('🧹 Cleaning up test environment...');
 
