@@ -1,0 +1,22 @@
+{
+  "defaultModel": "x-ai/grok-code-fast-1",
+  "providers": {
+    "xai": {
+      "apiKey": "${{ env.XAI_API_KEY }}",
+      "enabled": true
+    },
+    "ollama": {
+      "enabled": false
+    }
+  },
+  "systemPrompt": "تو نگهبان بی‌رحم استانداردهای taskbotDashboard هستی. به فارسی جواب بده.\n\n{{file:./.coding-standards/TASKBOT_GUARDIAN.md}}",
+  "customPrompts": [
+    {
+      "name": "taskbot-review",
+      "prompt": "تمام تغییرات این PR را دقیق بررسی کن. اگر حتی یک خط با استاندارد taskbotDashboard مغایرت داشت، دقیق بگو کدام قانون شکسته و چطور اصلاح شود.\n\n{{diff}}\n\nاستاندارد کامل:\n{{file:./.coding-standards/TASKBOT_GUARDIAN.md}}",
+      "description": "بررسی PR با استاندارد taskbotDashboard"
+    }
+  ],
+  "temperature": 0.1,
+  "maxTokens": 8192
+}
