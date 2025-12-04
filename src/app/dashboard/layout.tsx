@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 import dynamic from 'next/dynamic'
 
 // Dynamically import the client layout with no SSR
