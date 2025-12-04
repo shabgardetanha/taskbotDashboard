@@ -11,6 +11,30 @@
 - npm یا yarn
 - Git
 
+### ⚠️ هشدار امنیتی - اجرای تست در Production
+
+**مهم:** تست‌ها برای جلوگیری از اجرای تصادفی در محیط Production طراحی شده‌اند.
+
+#### مکانیزم‌های امنیتی:
+1. **Environment Check در کد تست‌ها**: تست‌ها در صورت تشخیص محیط Production متوقف می‌شوند
+2. **Package.json Script Protection**: اسکریپت `npm run test:e2e` دارای چک محیطی است
+3. **Playwright Config Safety**: تنظیمات Playwright در Production غیرفعال می‌شود
+4. **Global Setup Protection**: راه‌اندازی جهانی تست‌ها چک امنیتی دارد
+
+#### متغیرهای محیطی پشتیبانی شده:
+```bash
+# ❌ ممنوعه - تست‌ها اجرا نمی‌شوند
+NODE_ENV=production
+VERCEL_ENV=production
+RAILWAY_ENVIRONMENT=production
+
+# ✅ مجاز - تست‌ها اجرا می‌شوند
+NODE_ENV=development  # پیش‌فرض
+NODE_ENV=test
+NODE_ENV=staging
+NODE_ENV=dev
+```
+
 ### نصب وابستگی‌ها
 
 ```bash

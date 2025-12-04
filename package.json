@@ -10,7 +10,9 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "test:e2e": "playwright test",
+    "test:e2e": "node -e \"if (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT === 'production') { console.error('🚫 Tests are disabled in production environment!'); process.exit(1); } else { require('child_process').execSync('npx playwright test', { stdio: 'inherit' }); }\"",
+    "test:e2e:dev": "playwright test",
+    "test:e2e:staging": "NODE_ENV=staging playwright test",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },

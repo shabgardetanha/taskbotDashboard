@@ -2,6 +2,25 @@ import { test, expect } from '@playwright/test';
 import { DashboardPage } from './pages/DashboardPage';
 import { KanbanPage } from './pages/KanbanPage';
 
+// Environment safety check - prevent tests from running in production
+const isProduction = process.env.NODE_ENV === 'production' ||
+                    process.env.VERCEL_ENV === 'production' ||
+                    process.env.RAILWAY_ENVIRONMENT === 'production';
+
+if (isProduction) {
+  console.error('🚫 Tests are disabled in production environment!');
+  console.error('Tests should only run in development or testing environments.');
+  process.exit(1);
+}
+
+// Only run tests in allowed environments
+const allowedEnvs = ['development', 'test', 'dev', 'staging'];
+const currentEnv = process.env.NODE_ENV || 'development';
+
+if (!allowedEnvs.includes(currentEnv) && !isProduction) {
+  console.warn(`⚠️  Running tests in ${currentEnv} environment. Make sure this is intentional.`);
+}
+
 test.describe('Task Management - Happy Path Scenarios', () => {
   let dashboardPage: DashboardPage;
   let kanbanPage: KanbanPage;
