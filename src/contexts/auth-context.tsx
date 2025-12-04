@@ -4,7 +4,6 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
-import { toast } from '@/components/ui/toast'
 
 interface Profile {
   id: string
@@ -108,6 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) throw error
 
+      const { toast } = await import('@/components/ui/toast')
       toast({
         title: "ورود موفق",
         description: "به داشبورد خود خوش آمدید!",
@@ -115,6 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
     } catch (error) {
       console.error('Sign in error:', error)
+      const { toast } = await import('@/components/ui/toast')
       toast({
         title: "خطا در ورود",
         description: error instanceof Error ? error.message : "خطای نامشخص",
@@ -141,6 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) throw error
 
+      const { toast } = await import('@/components/ui/toast')
       toast({
         title: "ثبت‌نام موفق",
         description: "لطفا ایمیل خود را بررسی کنید",
@@ -148,6 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
     } catch (error) {
       console.error('Sign up error:', error)
+      const { toast } = await import('@/components/ui/toast')
       toast({
         title: "خطا در ثبت‌نام",
         description: error instanceof Error ? error.message : "خطای نامشخص",
@@ -166,6 +169,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) throw error
 
+      const { toast } = await import('@/components/ui/toast')
       toast({
         title: "خروج موفق",
         description: "تا دیدار بعدی!",
@@ -173,6 +177,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
     } catch (error) {
       console.error('Sign out error:', error)
+      const { toast } = await import('@/components/ui/toast')
       toast({
         title: "خطا در خروج",
         description: error instanceof Error ? error.message : "خطای نامشخص",
@@ -200,6 +205,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Reload profile
       await loadProfile(user.id)
 
+      const { toast } = await import('@/components/ui/toast')
       toast({
         title: "پروفایل بروزرسانی شد",
         description: "تغییرات شما ذخیره گردید",
@@ -207,6 +213,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
     } catch (error) {
       console.error('Update profile error:', error)
+      const { toast } = await import('@/components/ui/toast')
       toast({
         title: "خطا در بروزرسانی",
         description: error instanceof Error ? error.message : "خطای نامشخص",
@@ -275,6 +282,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     } catch (error) {
       console.error('Telegram sign in error:', error)
+      const { toast } = await import('@/components/ui/toast')
       toast({
         title: "خطا در ورود با تلگرام",
         description: error instanceof Error ? error.message : "خطای نامشخص",

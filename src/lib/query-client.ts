@@ -1,5 +1,4 @@
 import { QueryClient } from '@tanstack/react-query'
-import { toast } from '@/components/ui/toast'
 
 // Create a client with optimized defaults
 export const queryClient = new QueryClient({
@@ -38,13 +37,20 @@ export const queryClient = new QueryClient({
       retry: 1,
       retryDelay: 1000,
 
-      // Show error toast on mutation failure
-      onError: (error: Error) => {
-        toast({
-          title: 'خطا',
-          description: error.message || 'عملیات با شکست مواجه شد',
-          variant: 'destructive',
-        })
+      // Show error toast on mutation failure - lazy loaded to avoid SSR issues
+      onError: async (error: Error) => {
+        // Dynamically import toast to avoid SSR issues
+        try {
+          const { toast } = await import('@/components/ui/toast')
+          toast({
+            title: 'خطا',
+            description: error.message || 'عملیات با شکست مواجه شد',
+            variant: 'destructive',
+          })
+        } catch (importError) {
+          // Fallback if toast import fails
+          console.error('Failed to show error toast:', error)
+        }
       },
     },
   },
