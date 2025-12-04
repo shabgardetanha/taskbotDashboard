@@ -13,9 +13,7 @@ export class KanbanPage extends BasePage {
   private readonly taskDescriptionInput: Locator;
   private readonly taskPrioritySelect: Locator;
   private readonly taskDeadlineInput: Locator;
-  private readonly taskLabelsInput: Locator;
   private readonly saveTaskButton: Locator;
-  private readonly cancelTaskButton: Locator;
 
   // Task actions
   private readonly taskCards: Locator;
@@ -26,15 +24,9 @@ export class KanbanPage extends BasePage {
 
   // Filters and controls
   private readonly refreshButton: Locator;
-  private readonly filterButton: Locator;
-  private readonly sortButton: Locator;
-  private readonly viewButton: Locator;
 
   // Stats
   private readonly totalTasksCount: Locator;
-  private readonly todoCount: Locator;
-  private readonly inProgressCount: Locator;
-  private readonly doneCount: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -50,9 +42,7 @@ export class KanbanPage extends BasePage {
     this.taskDescriptionInput = page.getByLabel('توضیحات');
     this.taskPrioritySelect = page.getByLabel('اولویت');
     this.taskDeadlineInput = page.getByLabel('تاریخ پایان');
-    this.taskLabelsInput = page.getByLabel('برچسب‌ها');
     this.saveTaskButton = page.getByRole('button', { name: 'ذخیره' });
-    this.cancelTaskButton = page.getByRole('button', { name: 'لغو' });
 
     // Task actions
     this.taskCards = page.locator('[data-testid="task-card"]');
@@ -63,15 +53,9 @@ export class KanbanPage extends BasePage {
 
     // Filters and controls
     this.refreshButton = page.getByRole('button', { name: 'بروزرسانی' });
-    this.filterButton = page.getByRole('button', { name: 'فیلتر' });
-    this.sortButton = page.getByRole('button', { name: 'ترتیب' });
-    this.viewButton = page.getByRole('button', { name: 'نمای' });
 
     // Stats
     this.totalTasksCount = page.locator('[data-testid="total-tasks-count"]');
-    this.todoCount = page.locator('[data-testid="todo-count"]');
-    this.inProgressCount = page.locator('[data-testid="inprogress-count"]');
-    this.doneCount = page.locator('[data-testid="done-count"]');
   }
 
   async createTask(taskData: {
