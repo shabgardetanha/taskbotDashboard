@@ -1,19 +1,21 @@
 import { Button } from '@/components/ui/button'
-import type { Metadata } from 'next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import Link from 'next/link'
 import {
-  Zap,
-  CheckSquare,
-  Calendar,
-  BarChart3,
-  Bot,
-  ArrowRight,
-  Star,
-  Users,
-  Clock,
-  Smartphone
+    ArrowRight,
+    BarChart3,
+    Bot,
+    Calendar,
+    CheckSquare,
+    Clock,
+    Smartphone,
+    Star,
+    Users,
+    Zap
 } from 'lucide-react'
+import type { Metadata } from 'next'
+import Link from 'next/link'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'TaskBot Persian - مدیریت وظایف هوشمند',

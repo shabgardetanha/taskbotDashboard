@@ -1,6 +1,8 @@
 // src/app/webapp/page.tsx  ← فقط این فایل رو کامل جایگزین کن
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
