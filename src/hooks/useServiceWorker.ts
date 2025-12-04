@@ -80,7 +80,7 @@ export function useServiceWorker() {
 
     // Message handling
     navigator.serviceWorker.addEventListener('message', (event) => {
-      const { type, payload } = event.data
+      const { type } = event.data
 
       switch (type) {
         case 'SYNC_COMPLETE':
@@ -151,7 +151,7 @@ export function useServiceWorker() {
     })
 
     // Periodic sync (if supported)
-    if ('periodicSync' in registration) {
+    if ('periodicSync' in (registration as any)) {
       ;(registration as any).periodicSync.register('content-sync', {
         minInterval: 24 * 60 * 60 * 1000, // 24 hours
       }).catch((error: any) => {
@@ -160,7 +160,7 @@ export function useServiceWorker() {
     }
 
     // Background sync (if supported)
-    if ('sync' in registration) {
+    if ('sync' in (registration as any)) {
       // Register for background sync when online
       const handleOnline = () => {
         ;(registration as any).sync.register('background-sync').catch((error: any) => {
@@ -376,7 +376,7 @@ export function useBackgroundSync() {
 
     try {
       const registration = await navigator.serviceWorker.ready
-      await registration.sync.register(tag)
+      await (registration as any).sync.register(tag)
       setIsRegistered(true)
       return true
     } catch (error) {
@@ -408,7 +408,7 @@ export function usePeriodicSync() {
 
     try {
       const registration = await navigator.serviceWorker.ready
-      await registration.periodicSync.register(tag, { minInterval })
+      await (registration as any).periodicSync.register(tag, { minInterval })
       setIsRegistered(true)
       return true
     } catch (error) {

@@ -13,7 +13,6 @@ import type {
 import { toast } from '@/components/ui/toast'
 import {
   queryKeys,
-  mutationKeys,
   apiClient,
   API_ENDPOINTS,
 } from '@/lib/api-client'
@@ -53,10 +52,9 @@ export function useApiQuery<TData = unknown>(
   })
 }
 
-// Enhanced mutation hook with optimistic updates support
 export function useApiMutation<TData = unknown, TVariables = unknown, TError = ApiError>(
   mutationFn: (variables: TVariables) => Promise<ApiResponse<TData>>,
-  options?: UseMutationOptions<ApiResponse<TData>, TError, TVariables> & {
+  options?: UseMutationOptions<TData, TError, TVariables> & {
     successMessage?: string
     errorMessage?: string
     invalidateQueries?: QueryKey[]
@@ -95,7 +93,7 @@ export function useApiMutation<TData = unknown, TVariables = unknown, TError = A
 
       return { previousData }
     },
-    onError: (error: TError, variables: TVariables, context: any) => {
+    onError: (_error: TError, _variables: TVariables, context: any) => {
       // Revert optimistic update on error
       if (optimisticUpdate && context?.previousData !== undefined) {
         queryClient.setQueryData(optimisticUpdate.queryKey, context.previousData)
@@ -109,7 +107,7 @@ export function useApiMutation<TData = unknown, TVariables = unknown, TError = A
         variant: 'destructive',
       })
     },
-    onSuccess: (data: TData, variables: TVariables, context: any) => {
+    onSuccess: (_data: TData, _variables: TVariables, _context: any) => {
       // Invalidate related queries
       if (invalidateQueries) {
         invalidateQueries.forEach(queryKey => {

@@ -78,8 +78,8 @@ export function useFocusManagement() {
 
   const focusLastElement = useCallback((container?: HTMLElement) => {
     updateFocusableElements(container)
-    if (focusableElements.length > 0 && focusableElements[focusableElements.length - 1]) {
-      focusableElements[focusableElements.length - 1].focus()
+    if (focusableElements.length > 0) {
+      focusableElements[focusableElements.length - 1]?.focus()
     }
   }, [focusableElements, updateFocusableElements])
 
@@ -93,12 +93,12 @@ export function useFocusManagement() {
         if (event.shiftKey) {
           if (document.activeElement === firstElement) {
             event.preventDefault()
-            lastElement.focus()
+            lastElement?.focus()
           }
         } else {
           if (document.activeElement === lastElement) {
             event.preventDefault()
-            firstElement.focus()
+            firstElement?.focus()
           }
         }
       }
@@ -126,7 +126,6 @@ export function useFocusManagement() {
 
 // Keyboard navigation
 export function useKeyboardNavigation() {
-  const { setBreakpoint } = useUIStore()
 
   const handleKeyboardShortcuts = useCallback((event: KeyboardEvent) => {
     // Skip if user is typing in an input
@@ -278,9 +277,6 @@ export function useSkipLinks() {
 export function useAccessibility(options: AccessibilityOptions = {}) {
   const {
     announcePageChanges = true,
-    manageFocus = true,
-    handleKeyboardNavigation = true,
-    announceDynamicContent = true,
   } = options
 
   const screenReader = useScreenReader()
@@ -345,12 +341,12 @@ export const ariaUtils = {
         if (event.shiftKey) {
           if (document.activeElement === firstElement) {
             event.preventDefault()
-            lastElement.focus()
+            lastElement?.focus()
           }
         } else {
           if (document.activeElement === lastElement) {
             event.preventDefault()
-            firstElement.focus()
+            firstElement?.focus()
           }
         }
       }

@@ -118,7 +118,7 @@ interface KanbanColumnSkeletonProps {
   className?: string
 }
 
-export function KanbanColumnSkeleton({ title = 'در حال بارگذاری...', className }: KanbanColumnSkeletonProps) {
+export function KanbanColumnSkeleton({ className }: KanbanColumnSkeletonProps) {
   return (
     <div className={cn('bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-6', className)}>
       <div className="flex items-center gap-3 mb-6">
@@ -187,7 +187,7 @@ interface ButtonLoadingProps {
   className?: string
 }
 
-export function ButtonLoading({ loading, children, loadingText, className }: ButtonLoadingProps) {
+export function ButtonLoading({ loading, children, className }: ButtonLoadingProps) {
   return (
     <div className={cn('relative', className)}>
       {loading && (

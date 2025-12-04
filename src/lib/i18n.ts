@@ -345,11 +345,11 @@ export const validationMessages = {
 export function getValidationMessage(
   type: keyof typeof validationMessages.fa,
   locale: SupportedLocale = 'fa',
-  ...args: [number] | []
+  ...args: number[]
 ): string {
   const message = validationMessages[locale][type]
   if (typeof message === 'function') {
-    return message(...args)
+    return (message as (...args: number[]) => string)(...args)
   }
   return message
 }

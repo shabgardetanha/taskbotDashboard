@@ -27,9 +27,6 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     onConnect,
     onDisconnect,
     onError,
-    onTaskUpdate,
-    onWorkspaceUpdate,
-    onNotification,
   } = options
 
   const queryClient = useQueryClient()
@@ -203,9 +200,9 @@ export function useWorkspaceRealTime(workspaceId: string, enabled: boolean = tru
 
 // Hook for typing indicators
 export function useTypingIndicator(taskId: string) {
-  const { sendTypingIndicator, isConnected } = useWebSocket()
+  const { sendTypingIndicator } = useWebSocket()
   const [isTyping, setIsTyping] = useState(false)
-  const [otherUsersTyping, setOtherUsersTyping] = useState<Set<string>>(new Set())
+  const [otherUsersTyping] = useState<Set<string>>(new Set())
 
   const startTyping = useCallback(() => {
     if (!isTyping) {

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
 import { TaskDetailModal } from '@/components/TaskDetailModal'
-import { FileText, Plus, Search, Star, Trash2, Edit, Copy } from 'lucide-react'
+import { FileText, Plus, Search, Star, Trash2, Copy } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 interface TaskTemplate {
@@ -45,7 +45,6 @@ export default function TemplatesPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [isCreatingTemplate, setIsCreatingTemplate] = useState(false)
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -440,7 +439,7 @@ export default function TemplatesPage() {
 
       {/* Task Detail Modal */}
       <TaskDetailModal
-        task={selectedTask}
+        task={null}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onUpdate={async () => {}} // Could be implemented for template preview

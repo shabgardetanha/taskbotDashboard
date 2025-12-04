@@ -4,7 +4,6 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { useAuth } from '@/contexts/auth-context'
 import { useWorkspace } from '@/contexts/workspace-context'
 import {
   BarChart3,
@@ -60,7 +59,6 @@ interface AnalyticsDashboardProps {
 }
 
 export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
-  const { user } = useAuth()
   const { currentWorkspace } = useWorkspace()
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
   const [isLoading, setIsLoading] = useState(true)

@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom'
-import { expect, afterEach } from 'vitest'
+import { expect, afterEach, vi, beforeAll, afterAll } from 'vitest'
 import { cleanup } from '@testing-library/react'
 import * as matchers from '@testing-library/jest-dom/matchers'
 
@@ -46,8 +46,10 @@ const localStorageMock = {
   setItem: vi.fn(),
   removeItem: vi.fn(),
   clear: vi.fn(),
+  get length() { return 0 },
+  key: vi.fn(),
 }
-global.localStorage = localStorageMock
+global.localStorage = localStorageMock as any
 
 // Mock sessionStorage
 const sessionStorageMock = {
@@ -55,8 +57,10 @@ const sessionStorageMock = {
   setItem: vi.fn(),
   removeItem: vi.fn(),
   clear: vi.fn(),
+  get length() { return 0 },
+  key: vi.fn(),
 }
-global.sessionStorage = sessionStorageMock
+global.sessionStorage = sessionStorageMock as any
 
 // Mock console methods to reduce noise in tests
 const originalConsoleError = console.error

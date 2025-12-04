@@ -1,6 +1,5 @@
 'use client'
 
-import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { supabase } from '@/lib/supabase'
@@ -100,7 +99,7 @@ export default function AnalyticsPage() {
         : 0
 
       // Today's stats
-      const today = new Date().toISOString().split('T')[0]
+      const today = new Date().toISOString().split('T')[0] || ''
       const tasksCreatedToday = allTasks.filter(t =>
         t.created_at && t.created_at.startsWith(today)
       ).length
@@ -109,7 +108,7 @@ export default function AnalyticsPage() {
       ).length
 
       // This week's stats
-      const weekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      const weekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] || ''
       const tasksDueThisWeek = allTasks.filter(t =>
         t.due_date && t.due_date >= today && t.due_date <= weekFromNow
       ).length

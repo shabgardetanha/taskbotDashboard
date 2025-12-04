@@ -1,6 +1,5 @@
 'use client'
 
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -14,9 +13,7 @@ import {
   Sun,
   Shield,
   Palette,
-  Globe,
   Smartphone,
-  Mail,
   Lock,
   Eye,
   EyeOff,
@@ -24,8 +21,7 @@ import {
   RefreshCw,
   Camera,
   Trash2,
-  Download,
-  Upload
+  Download
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
@@ -313,7 +309,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="flex justify-end">
-                    <Button onClick={() => updateProfile({ full_name: profile?.full_name })}>
+                    <Button onClick={() => profile?.full_name && updateProfile({ full_name: profile.full_name })}>
                       {isSaving ? <LoadingSpinner size="sm" className="ml-2" /> : <Save className="w-4 h-4 ml-2" />}
                       ذخیره تغییرات
                     </Button>

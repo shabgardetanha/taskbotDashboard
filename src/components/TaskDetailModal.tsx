@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
 import { TaskComments } from '@/components/TaskComments'
 import { TaskAttachments } from '@/components/TaskAttachments'
-import { Calendar, CheckSquare, Clock, Plus, X, Edit, Save, Timer, MessageCircle, Trash2 } from 'lucide-react'
+import { Calendar, CheckSquare, Clock, Plus, X, Edit, Save, Timer, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 interface Task {
@@ -51,12 +51,10 @@ interface TaskDetailModalProps {
 export function TaskDetailModal({ task, isOpen, onClose, onUpdate }: TaskDetailModalProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editedTask, setEditedTask] = useState<Task | null>(null)
-  const [availableLabels, setAvailableLabels] = useState<Array<{ id: string; name: string; color: string }>>([])
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([])
   const [newSubtask, setNewSubtask] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [timeLogs, setTimeLogs] = useState<any[]>([])
-  const [totalTime, setTotalTime] = useState(0)
   const [totalHours, setTotalHours] = useState(0)
   const [totalMinutes, setTotalMinutes] = useState(0)
   const [timeSpent, setTimeSpent] = useState('')
@@ -73,12 +71,12 @@ export function TaskDetailModal({ task, isOpen, onClose, onUpdate }: TaskDetailM
   const loadAvailableLabels = async () => {
     if (!task?.workspace_id) return
 
-    const { data } = await supabase
+    await supabase
       .from('task_labels')
       .select('id, name, color')
       .eq('workspace_id', task.workspace_id)
 
-    setAvailableLabels(data || [])
+    // Available labels are not used in the current implementation
   }
 
   const loadActivityLogs = async () => {
@@ -177,7 +175,6 @@ export function TaskDetailModal({ task, isOpen, onClose, onUpdate }: TaskDetailM
       const data = await response.json()
 
       setTimeLogs(data.timeLogs || [])
-      setTotalTime(data.totalTime || 0)
       setTotalHours(data.totalHours || 0)
       setTotalMinutes(data.totalMinutes || 0)
     } catch (error) {
@@ -218,11 +215,7 @@ export function TaskDetailModal({ task, isOpen, onClose, onUpdate }: TaskDetailM
     }
   }, [task])
 
-  const progressPercent = editedTask?.subtasks
-    ? Math.round(
-        (editedTask.subtasks.filter(st => st.completed).length / editedTask.subtasks.length) * 100
-      )
-    : 0
+
 
   if (!isOpen || !task || !editedTask) return null
 

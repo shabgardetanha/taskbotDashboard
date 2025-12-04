@@ -11,7 +11,6 @@ import {
   Trash2,
   Calendar,
   MessageCircle,
-  Paperclip,
   Users,
   AlertCircle,
   Clock

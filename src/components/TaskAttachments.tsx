@@ -14,7 +14,6 @@ import {
   FileText,
   Archive,
   Upload,
-  X,
   Eye
 } from 'lucide-react'
 import { useEffect, useState } from 'react'

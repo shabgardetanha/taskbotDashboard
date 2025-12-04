@@ -2,12 +2,9 @@
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { TaskDetailModal } from '@/components/TaskDetailModal'
-import { LoadingSpinner, PageLoading } from '@/components/ui/loading'
-import { ErrorState } from '@/components/ui/empty-state'
 import { supabase } from '@/lib/supabase'
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, Filter, Smartphone } from 'lucide-react'
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, Filter } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 interface Task {
@@ -29,12 +26,9 @@ interface Task {
   created_at?: string
 }
 
-type ViewMode = 'month' | 'week'
-
 export default function CalendarPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [viewMode, setViewMode] = useState<ViewMode>('month')
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -381,11 +375,11 @@ export default function CalendarPage() {
       {/* Mobile Bottom Actions */}
       <div className="md:hidden fixed bottom-4 left-4 right-4 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-4 border border-gray-200 dark:border-gray-700">
         <div className="flex justify-around">
-          <Button variant="outline" size="sm" onClick={() => setViewMode('month')}>
+          <Button variant="outline" size="sm">
             <CalendarIcon className="w-4 h-4 mr-2" />
             ماهانه
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setViewMode('week')}>
+          <Button variant="outline" size="sm">
             <Filter className="w-4 h-4 mr-2" />
             هفتگی
           </Button>

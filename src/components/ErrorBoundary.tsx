@@ -1,7 +1,7 @@
 'use client'
 
 import React, { Component } from 'react'
-import type { ReactNode, ErrorInfo } from 'react'
+import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { AlertTriangle, RefreshCw, Home, Bug } from 'lucide-react'
@@ -24,9 +24,9 @@ interface ErrorBoundaryProps {
 
 export interface ErrorFallbackProps {
   error: Error
-  errorInfo?: React.ErrorInfo
+  errorInfo?: React.ErrorInfo | undefined
   resetError: () => void
-  errorId?: string
+  errorId?: string | undefined
 }
 
 const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
@@ -229,24 +229,15 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     }
   }
 
-  private resetErrorAfterDelay = (delay: number = 100) => {
-    if (this.resetTimeoutId) {
-      window.clearTimeout(this.resetTimeoutId)
-    }
 
-    this.resetTimeoutId = window.setTimeout(() => {
-      this.resetError()
-      this.resetTimeoutId = null
-    }, delay)
-  }
 
-  override componentWillUnmount() {
+  override componentWillUnmount(): void {
     if (this.resetTimeoutId) {
       window.clearTimeout(this.resetTimeoutId)
     }
   }
 
-  render() {
+  override render() {
     if (this.state.hasError && this.state.error) {
       const FallbackComponent = this.props.fallback || DefaultErrorFallback
 

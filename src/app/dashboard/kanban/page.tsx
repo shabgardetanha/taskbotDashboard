@@ -3,14 +3,14 @@
 export const dynamic = 'force-dynamic'
 
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { TaskDetailModal } from '@/components/TaskDetailModal'
-import { KanbanColumnSkeleton, PageLoading, LoadingSpinner } from '@/components/ui/loading'
+import { KanbanColumnSkeleton } from '@/components/ui/loading'
 import { TaskEmptyState, ErrorState } from '@/components/ui/empty-state'
 import { WorkspaceSelector } from '@/components/WorkspaceSelector'
 import { supabase } from '@/lib/supabase'
 import { toast } from '@/components/ui/toast'
-import { Calendar, CheckSquare, Clock, Plus, RefreshCw, Users, Filter, ArrowUpDown, Grid3X3 } from 'lucide-react'
+import { Calendar, CheckSquare, RefreshCw, Users, Filter, ArrowUpDown, Grid3X3 } from 'lucide-react'
 import {
   closestCenter,
   DndContext,
@@ -177,15 +177,13 @@ export default function KanbanPage() {
 
     try {
       // Update task status and position
-      const { data: updatedTask } = await supabase
+      await supabase
         .from('tasks')
         .update({
           status: newStatus,
           position: Date.now() // Use timestamp as position for simple ordering
         } as any)
         .eq('id', taskId)
-        .select()
-        .single()
 
       // Refresh tasks data
       const { data } = await supabase
@@ -396,7 +394,6 @@ export default function KanbanPage() {
                 return 0
               })
 
-              const columnColor = key === 'todo' ? 'blue' : key === 'inprogress' ? 'yellow' : 'green'
               const columnBgClass = key === 'todo'
                 ? 'bg-gradient-to-br from-blue-50 via-blue-25 to-blue-50 dark:from-blue-900/10 dark:via-blue-800/5 dark:to-blue-900/10'
                 : key === 'inprogress'
@@ -470,7 +467,7 @@ export default function KanbanPage() {
                           </p>
                         </div>
                       ) : (
-                        columnTasks.map((task, index) => {
+                        columnTasks.map((task) => {
                           const dueDateStatus = getDueDateStatus(task.due_date)
                           const isOverdue = dueDateStatus?.status === 'overdue'
 

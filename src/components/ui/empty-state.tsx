@@ -124,8 +124,8 @@ export function TaskEmptyState({ onCreateTask, variant = 'all-tasks', className 
       icon={config.icon}
       title={config.title}
       description={config.description}
-      action={config.action}
-      className={className}
+      {...(config.action && { action: config.action })}
+      {...(className && { className })}
     />
   )
 }
@@ -150,11 +150,8 @@ export function ErrorState({
       </div>}
       title={title}
       description={description}
-      action={onRetry ? {
-        label: 'تلاش دوباره',
-        onClick: onRetry
-      } : undefined}
-      className={className}
+      {...(onRetry && { action: { label: 'تلاش دوباره', onClick: onRetry } })}
+      {...(className && { className })}
     />
   )
 }
@@ -177,7 +174,7 @@ export function NoDataState({
       </div>}
       title={title}
       description={description}
-      className={className}
+      {...(className && { className })}
     />
   )
 }

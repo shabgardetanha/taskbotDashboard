@@ -13,14 +13,12 @@ import {
   FileText,
   Settings,
   User,
-  Bell,
   Moon,
   Sun,
   Plus,
   Zap,
   ChevronLeft,
-  ChevronRight,
-  Keyboard
+  ChevronRight
 } from 'lucide-react'
 import { useState, useEffect, useCallback } from 'react'
 import { WorkspaceSelector } from '@/components/WorkspaceSelector'
@@ -97,7 +95,6 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [darkMode, setDarkMode] = useState(false)
-  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
 
   // Initialize theme and sidebar state
   useEffect(() => {
@@ -142,7 +139,7 @@ export default function DashboardLayout({
   }, [])
 
   // Keyboard shortcuts
-  const shortcuts = useDashboardShortcuts({
+  useDashboardShortcuts({
     onCreateTask: () => {
       toast({
         title: "کلید میانبر",
@@ -183,7 +180,6 @@ export default function DashboardLayout({
               onNavigate={closeSidebar}
               isCollapsed={false}
               isMobile={true}
-              onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
             />
           </div>
         </div>
@@ -200,7 +196,6 @@ export default function DashboardLayout({
               isCollapsed={sidebarCollapsed}
               isMobile={false}
               onToggleCollapse={toggleSidebarCollapse}
-              onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
             />
           </div>
         </div>
@@ -257,8 +252,7 @@ function SidebarContent({
   onNavigate,
   isCollapsed,
   isMobile,
-  onToggleCollapse,
-  onShowKeyboardHelp
+  onToggleCollapse
 }: {
   navigation: NavigationItem[]
   pathname: string
@@ -266,7 +260,6 @@ function SidebarContent({
   isCollapsed: boolean
   isMobile: boolean
   onToggleCollapse?: () => void
-  onShowKeyboardHelp?: () => void
 }) {
   return (
     <>
@@ -392,14 +385,6 @@ function SidebarContent({
             </div>
 
             <div className="flex gap-1">
-              <button
-                onClick={onShowKeyboardHelp}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 hover:scale-110"
-                title="کلیدهای میانبر"
-                aria-label="نمایش کلیدهای میانبر"
-              >
-                <Keyboard className="w-4 h-4 text-gray-500" />
-              </button>
               <Link
                 href="/dashboard/settings"
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 hover:scale-110"

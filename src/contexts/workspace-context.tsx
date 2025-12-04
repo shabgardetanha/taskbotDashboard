@@ -223,7 +223,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
       if (currentWorkspace?.id === id) {
         const remainingWorkspaces = workspaces.filter(w => w.id !== id)
-        setCurrentWorkspace(remainingWorkspaces.length > 0 ? remainingWorkspaces[0] : null)
+        setCurrentWorkspace(remainingWorkspaces[0] ?? null)
       }
 
       toast({
@@ -256,7 +256,10 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         throw new Error('کاربر با این ایمیل یافت نشد')
       }
 
-      const userId = profiles[0].id
+      const userId = profiles[0]?.id
+      if (!userId) {
+        throw new Error('کاربر با این ایمیل یافت نشد')
+      }
 
       // Check if already a member
       const { data: existingMember } = await supabase

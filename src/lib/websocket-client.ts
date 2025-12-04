@@ -94,7 +94,9 @@ export class WebSocketClient {
     } = {}
   ) {
     this.url = url
-    this.protocols = protocols
+    if (protocols) {
+      this.protocols = protocols
+    }
 
     if (options.maxReconnectAttempts) {
       this.maxReconnectAttempts = options.maxReconnectAttempts
@@ -362,17 +364,17 @@ export class WebSocketManager {
       onError: (error) => {
         console.error('WebSocket error:', error)
       },
-      onTaskUpdate: (taskId, data) => {
+      onTaskUpdate: (taskId, _data) => {
         // Invalidate task queries
         this.queryClient.invalidateQueries({ queryKey: ['tasks', 'detail', taskId] })
         this.queryClient.invalidateQueries({ queryKey: ['tasks'] })
       },
-      onWorkspaceUpdate: (workspaceId, data) => {
+      onWorkspaceUpdate: (workspaceId, _data) => {
         // Invalidate workspace queries
         this.queryClient.invalidateQueries({ queryKey: ['workspaces', 'detail', workspaceId] })
         this.queryClient.invalidateQueries({ queryKey: ['workspaces'] })
       },
-      onUserPresence: (userId, status) => {
+      onUserPresence: (_userId, _status) => {
         // Update presence in user queries
         this.queryClient.invalidateQueries({ queryKey: ['users', 'presence'] })
       },
