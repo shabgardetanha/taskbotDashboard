@@ -73,8 +73,10 @@ export default defineConfig({
     // },
   ],
 
-  /* Run your local dev server before starting the tests */
-  ...(process.env.NODE_ENV === 'production' ? {} : {
+  /* Run your local dev server before starting the tests.
+     Can be disabled by setting PLAYWRIGHT_USE_WEB_SERVER=false so tests
+     will reuse an already-running dev server (useful in CI or local debugging). */
+  ...((process.env.NODE_ENV === 'production' || process.env.PLAYWRIGHT_USE_WEB_SERVER === 'false') ? {} : {
     webServer: {
       command: 'npm run dev',
       url: 'http://localhost:3000',

@@ -1,15 +1,13 @@
 import { Providers } from '@/components/providers'
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
 
 export const dynamic = 'force-dynamic'
 
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-inter'
-})
+// Avoid using `next/font/google` here to prevent outbound network requests
+// during test runs (Playwright webServer may fetch Google Fonts and hang).
+// Use a small local stub object with the same `variable` property used in the layout.
+const inter = { variable: '' }
 
 export const metadata: Metadata = {
   title: 'TaskBot Persian - مدیریت وظایف هوشمند',
