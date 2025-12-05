@@ -1,6 +1,6 @@
 /// <reference types="vitest" />
-import { defineConfig } from 'vitest/config'
 import { resolve } from 'path'
+import { defineConfig } from 'vitest/config'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -8,6 +8,7 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+    exclude: ['node_modules', 'dist', 'tests/**/*.spec.ts', '.idea', '.git', '.cache'],
   },
   resolve: {
     alias: {

@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import React from 'react'
+import { describe, expect, it } from 'vitest'
 import { Badge } from './badge'
 
 describe('Badge Component', () => {
@@ -56,3 +57,5 @@ describe('Badge Component', () => {
     const badge = screen.getByText('Custom Badge')
 
     expect(badge).toHaveClass('custom-class')
+  })
+})
