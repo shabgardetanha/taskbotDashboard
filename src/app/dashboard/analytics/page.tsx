@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import { AnalyticsDashboard } from '@/components/AnalyticsDashboard'
 import { supabase } from '@/lib/supabase'
 import { BarChart3, Calendar, CheckCircle, Clock, TrendingUp, Users, AlertTriangle, Target } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -421,6 +422,12 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Analytics Dashboard Component */}
+      <div className="mt-8 border-t pt-8">
+        <h2 className="text-2xl font-bold mb-6">داشبورد تجزیه و تحلیل</h2>
+        <AnalyticsDashboard />
+      </div>
     </div>
   )
 }

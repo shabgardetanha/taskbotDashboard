@@ -5,9 +5,11 @@ export const dynamic = 'force-dynamic'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { TaskDetailModal } from '@/components/TaskDetailModal'
+import { NotificationsDropdown } from '@/components/NotificationsDropdown'
 import { KanbanColumnSkeleton } from '@/components/ui/loading'
 import { TaskEmptyState, ErrorState } from '@/components/ui/empty-state'
 import { WorkspaceSelector } from '@/components/WorkspaceSelector'
+import { useScreenReader } from '@/hooks/useAccessibility'
 import { supabase } from '@/lib/supabase'
 import { toast } from '@/components/ui/toast'
 import { Calendar, CheckSquare, RefreshCw, Users, Filter, ArrowUpDown, Grid3X3 } from 'lucide-react'
@@ -83,6 +85,7 @@ export default function KanbanPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const { announceLoading, announceError, announcePageChange } = useScreenReader()
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -95,6 +98,7 @@ export default function KanbanPage() {
     try {
       setIsLoading(true)
       setError(null)
+      announceLoading(true)
 
       const { data, error: fetchError } = await supabase
         .from('tasks')
@@ -110,11 +114,15 @@ export default function KanbanPage() {
       if (fetchError) throw fetchError
 
       setTasks((data as Task[]) || [])
+      announcePageChange('کانبان')
     } catch (err) {
       console.error('Error fetching tasks:', err)
-      setError(err instanceof Error ? err.message : 'خطا در بارگذاری وظایف')
+      const errorMsg = err instanceof Error ? err.message : 'خطا در بارگذاری وظایف'
+      setError(errorMsg)
+      announceError(errorMsg)
     } finally {
       setIsLoading(false)
+      announceLoading(false)
     }
   }, [])
 
@@ -260,6 +268,8 @@ export default function KanbanPage() {
               <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
               <span className="text-sm">بروزرسانی</span>
             </button>
+
+            <NotificationsDropdown />
 
             <div className="flex items-center gap-1 px-3 py-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
               <Users className="w-4 h-4 text-gray-500" />
