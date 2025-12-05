@@ -24,13 +24,14 @@ if (!allowedEnvs.includes(currentEnv) && !isProduction) {
 test.describe('Task Management - Happy Path Scenarios', () => {
   let dashboardPage: DashboardPage;
   let kanbanPage: KanbanPage;
+  const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
 
   test.beforeEach(async ({ page }) => {
     dashboardPage = new DashboardPage(page);
     kanbanPage = new KanbanPage(page);
 
     // Navigate to application and login (assuming auto-login for demo)
-    await page.goto('http://localhost:3000/dashboard/kanban');
+    await page.goto(`${baseUrl}/dashboard/kanban`);
     await page.waitForLoadState('networkidle');
   });
 

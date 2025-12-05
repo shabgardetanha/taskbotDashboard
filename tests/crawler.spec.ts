@@ -51,7 +51,7 @@ class AppCrawler {
     userRoles: [],
     apiEndpoints: []
   };
-  private baseUrl = 'http://localhost:3000';
+  private baseUrl = process.env.BASE_URL || 'http://localhost:3000';
 
   async crawlPage(page: Page, url: string): Promise<void> {
     if (this.visitedUrls.has(url)) return;
