@@ -141,7 +141,7 @@ export default function KanbanPage() {
       setIsLoading(false)
       announceLoading(false)
     }
-  }, [])
+  }, [announceLoading, announceError, announcePageChange])
 
   // Derived filtered tasks (apply UI filters without mutating the source tasks)
   const filteredTasks = useMemo(() => {
