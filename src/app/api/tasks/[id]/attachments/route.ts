@@ -5,10 +5,6 @@ import { writeFile, mkdir, unlink } from 'fs/promises'
 import { join } from 'path'
 import { randomUUID } from 'crypto'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-const supabase = createClient(supabaseUrl, supabaseKey)
-
 // Configure upload directory
 const UPLOAD_DIR = join(process.cwd(), 'uploads', 'attachments')
 
@@ -17,6 +13,10 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
     const taskId = params.id
 
     const { data: attachments, error } = await supabase
@@ -47,6 +47,10 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
     const taskId = params.id
     const formData = await req.formData()
     const file = formData.get('file') as File
@@ -143,6 +147,10 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
     const taskId = params.id
     const { searchParams } = new URL(req.url)
     const attachmentId = searchParams.get('attachment_id')

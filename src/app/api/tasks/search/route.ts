@@ -1,10 +1,5 @@
-// src/app/api/tasks/search/route.ts - Advanced search and filtering
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-const supabase = createClient(supabaseUrl, supabaseKey)
 
 interface TaskFilter {
   workspace_id?: string
@@ -20,6 +15,10 @@ interface TaskFilter {
 
 export async function POST(req: NextRequest) {
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
     const filters: TaskFilter = await req.json()
     let query = supabase.from('tasks').select(`
       *,
