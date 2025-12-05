@@ -1,298 +1,546 @@
-// src/test/api-integration.test.ts - API Integration Tests
-import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest'
-import { TestDataFactory, MockUtils, AssertionHelpers, EnvironmentUtils } from './test-helpers'
-import { createClient } from '@supabase/supabase-js'
+/// <reference types="vitest/globals" />
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 
-// Mock fetch for API tests
-global.fetch = vi.fn()
+// API Integration Testing Suite
+describe('API Integration Testing', () => {
+  describe('Task Management Integration', () => {
+    it('should create, read, update, and delete tasks end-to-end', async () => {
+      // Test full CRUD cycle for tasks
+      const testUserId = 'integration-test-user'
 
-describe('API Integration Tests', () => {
-  const baseUrl = 'http://localhost:3000'
-  let supabase: any
-
-  beforeAll(() => {
-    EnvironmentUtils.setTestEnv()
-    supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
-  })
-
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
-
-  describe('Task API Routes', () => {
-    it('GET /api/tasks - should return tasks list', async () => {
-      const mockTasks = [
-        TestDataFactory.createTask(),
-        TestDataFactory.createTask()
-      ]
-
-      // Mock Supabase response
-      const mockSupabase = MockUtils.mockSupabaseClient()
-      mockSupabase.select.mockResolvedValue(MockUtils.mockApiResponse(mockTasks))
-
-      // Mock the API call
-      ;(global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => mockTasks
-      })
-
-      const response = await fetch(`${baseUrl}/api/tasks`)
-      const data = await AssertionHelpers.expectApiResponse(response)
-
-      expect(Array.isArray(data)).toBe(true)
-      expect(data.length).toBeGreaterThan(0)
-      expect(data[0]).toHaveProperty('id')
-      expect(data[0]).toHaveProperty('title')
-    })
-
-    it('POST /api/tasks - should create new task', async () => {
-      const newTask = TestDataFactory.createTask({
-        title: 'Integration Test Task',
-        status: 'todo'
-      })
-
-      const mockSupabase = MockUtils.mockSupabaseClient()
-      mockSupabase.insert.mockResolvedValue(MockUtils.mockApiResponse(newTask))
-
-      ;(global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        status: 201,
-        json: async () => newTask
-      })
-
-      const response = await fetch(`${baseUrl}/api/tasks`, {
+      // 1. Create a task
+      const createResponse = await fetch('/api/tasks', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'user-id': testUserId
+        },
         body: JSON.stringify({
-          title: newTask.title,
-          description: newTask.description,
-          workspace_id: newTask.workspace_id,
-          priority: newTask.priority
+          title: 'Integration Test Task',
+          description: 'Testing full CRUD cycle',
+          priority: 'medium',
+          status: 'todo'
         })
       })
 
-      const data = await AssertionHelpers.expectApiResponse(response, 201)
-      expect(data.title).toBe(newTask.title)
-      expect(data.status).toBe('todo')
-    })
+      expect(createResponse.ok).toBe(true)
+      const createdTask = await createResponse.json()
+      expect(createdTask.id).toBeDefined()
+      expect(createdTask.title).toBe('Integration Test Task')
 
-    it('GET /api/tasks/[id] - should return specific task', async () => {
-      const task = TestDataFactory.createTask()
+      const taskId = createdTask.id
 
-      ;(global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => task
+      // 2. Read the task
+      const readResponse = await fetch(`/api/tasks/${taskId}`, {
+        headers: { 'user-id': testUserId }
       })
 
-      const response = await fetch(`${baseUrl}/api/tasks/${task.id}`)
-      const data = await AssertionHelpers.expectApiResponse(response)
+      expect(readResponse.ok).toBe(true)
+      const readTask = await readResponse.json()
+      expect(readTask.id).toBe(taskId)
+      expect(readTask.title).toBe('Integration Test Task')
 
-      expect(data.id).toBe(task.id)
-      expect(data.title).toBe(task.title)
-    })
-
-    it('PUT /api/tasks/[id] - should update task', async () => {
-      const task = TestDataFactory.createTask()
-      const updates = { title: 'Updated Task Title' }
-
-      const updatedTask = { ...task, ...updates }
-
-      ;(global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => updatedTask
-      })
-
-      const response = await fetch(`${baseUrl}/api/tasks/${task.id}`, {
+      // 3. Update the task
+      const updateResponse = await fetch(`/api/tasks/${taskId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
-      })
-
-      const data = await AssertionHelpers.expectApiResponse(response)
-      expect(data.title).toBe(updates.title)
-    })
-
-    it('DELETE /api/tasks/[id] - should delete task', async () => {
-      const task = TestDataFactory.createTask()
-
-      ;(global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        status: 204
-      })
-
-      const response = await fetch(`${baseUrl}/api/tasks/${task.id}`, {
-        method: 'DELETE'
-      })
-
-      expect(response.status).toBe(204)
-    })
-  })
-
-  describe('Workspace API Routes', () => {
-    it('GET /api/workspaces - should return workspaces', async () => {
-      const mockWorkspaces = [
-        TestDataFactory.createWorkspace(),
-        TestDataFactory.createWorkspace()
-      ]
-
-      ;(global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => mockWorkspaces
-      })
-
-      const response = await fetch(`${baseUrl}/api/workspaces`)
-      const data = await AssertionHelpers.expectApiResponse(response)
-
-      expect(Array.isArray(data)).toBe(true)
-      expect(data[0]).toHaveProperty('id')
-      expect(data[0]).toHaveProperty('name')
-    })
-
-    it('POST /api/workspaces - should create workspace', async () => {
-      const newWorkspace = TestDataFactory.createWorkspace({
-        name: 'Integration Test Workspace'
-      })
-
-      ;(global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        status: 201,
-        json: async () => newWorkspace
-      })
-
-      const response = await fetch(`${baseUrl}/api/workspaces`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'user-id': testUserId
+        },
         body: JSON.stringify({
-          name: newWorkspace.name,
-          description: newWorkspace.description
+          title: 'Updated Integration Test Task',
+          status: 'inprogress'
         })
       })
 
-      const data = await AssertionHelpers.expectApiResponse(response, 201)
-      expect(data.name).toBe(newWorkspace.name)
+      expect(updateResponse.ok).toBe(true)
+      const updatedTask = await updateResponse.json()
+      expect(updatedTask.title).toBe('Updated Integration Test Task')
+      expect(updatedTask.status).toBe('inprogress')
+
+      // 4. Delete the task
+      const deleteResponse = await fetch(`/api/tasks/${taskId}`, {
+        method: 'DELETE',
+        headers: { 'user-id': testUserId }
+      })
+
+      expect(deleteResponse.ok).toBe(true)
+
+      // 5. Verify deletion
+      const verifyResponse = await fetch(`/api/tasks/${taskId}`, {
+        headers: { 'user-id': testUserId }
+      })
+
+      expect(verifyResponse.status).toBe(404)
+    })
+
+    it('should handle task relationships correctly', async () => {
+      // Test parent-child task relationships
+      const testUserId = 'integration-test-user'
+
+      // Create parent task
+      const parentResponse = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'user-id': testUserId
+        },
+        body: JSON.stringify({
+          title: 'Parent Task',
+          description: 'Main task with subtasks'
+        })
+      })
+
+      expect(parentResponse.ok).toBe(true)
+      const parentTask = await parentResponse.json()
+
+      // Create subtask
+      const subResponse = await fetch('/api/subtasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'user-id': testUserId
+        },
+        body: JSON.stringify({
+          title: 'Subtask',
+          parent_task_id: parentTask.id
+        })
+      })
+
+      expect(subResponse.ok).toBe(true)
+      const subTask = await subResponse.json()
+
+      // Verify relationship in API response
+      const tasksResponse = await fetch('/api/tasks', {
+        headers: { 'user-id': testUserId }
+      })
+
+      expect(tasksResponse.ok).toBe(true)
+      const tasks = await tasksResponse.json()
+      const foundParent = tasks.find((t: any) => t.id === parentTask.id)
+
+      expect(foundParent).toBeDefined()
+      expect(foundParent.subtasks).toBeDefined()
+      expect(foundParent.subtasks.length).toBeGreaterThan(0)
     })
   })
 
-  describe('Task Templates API Routes', () => {
-    it('GET /api/task-templates - should return templates', async () => {
-      const mockTemplates = [
-        {
-          id: 'template-1',
-          name: 'Bug Report Template',
-          template_data: { title: 'Bug: ', priority: 'high' }
-        }
-      ]
+  describe('Workspace Integration', () => {
+    it('should create workspace and manage members', async () => {
+      const ownerId = 'workspace-owner'
+      const memberId = 'workspace-member'
 
-      ;(global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => mockTemplates
+      // 1. Create workspace
+      const workspaceResponse = await fetch('/api/workspaces', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'user-id': ownerId
+        },
+        body: JSON.stringify({
+          name: 'Integration Test Workspace',
+          description: 'Testing workspace integration'
+        })
       })
 
-      const response = await fetch(`${baseUrl}/api/task-templates`)
-      const data = await AssertionHelpers.expectApiResponse(response)
+      expect(workspaceResponse.ok).toBe(true)
+      const workspace = await workspaceResponse.json()
 
-      expect(Array.isArray(data)).toBe(true)
-      expect(data[0]).toHaveProperty('name')
-      expect(data[0]).toHaveProperty('template_data')
+      // 2. Add member to workspace
+      const addMemberResponse = await fetch(`/api/workspaces/${workspace.id}/members`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'user-id': ownerId
+        },
+        body: JSON.stringify({
+          user_id: memberId,
+          role: 'member',
+          inviter_id: ownerId
+        })
+      })
+
+      expect(addMemberResponse.ok).toBe(true)
+
+      // 3. Verify member was added
+      const membersResponse = await fetch(`/api/workspaces/${workspace.id}/members`, {
+        headers: { 'user-id': ownerId }
+      })
+
+      expect(membersResponse.ok).toBe(true)
+      const members = await membersResponse.json()
+      expect(members.length).toBeGreaterThanOrEqual(2) // Owner + member
+
+      // 4. List workspaces for member
+      const userWorkspacesResponse = await fetch('/api/workspaces', {
+        headers: { 'user-id': memberId }
+      })
+
+      expect(userWorkspacesResponse.ok).toBe(true)
+      const userWorkspaces = await userWorkspacesResponse.json()
+      expect(userWorkspaces.some((w: any) => w.id === workspace.id)).toBe(true)
     })
 
-    it('POST /api/task-templates - should create template', async () => {
-      const templateData = {
-        name: 'Feature Request Template',
-        template_data: { title: 'Feature: ', priority: 'medium' },
-        workspace_id: 'workspace-1',
-        category: 'feature'
+    it('should enforce workspace permissions', async () => {
+      const ownerId = 'permission-owner'
+      const unauthorizedUserId = 'unauthorized-user'
+
+      // Create workspace as owner
+      const workspaceResponse = await fetch('/api/workspaces', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'user-id': ownerId
+        },
+        body: JSON.stringify({
+          name: 'Permission Test Workspace'
+        })
+      })
+
+      expect(workspaceResponse.ok).toBe(true)
+      const workspace = await workspaceResponse.json()
+
+      // Try to delete workspace as unauthorized user
+      const deleteResponse = await fetch('/api/workspaces', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'user-id': unauthorizedUserId
+        },
+        body: JSON.stringify({ id: workspace.id })
+      })
+
+      expect(deleteResponse.status).toBe(403) // Forbidden
+
+      // Verify workspace still exists
+      const verifyResponse = await fetch(`/api/workspaces/${workspace.id}`, {
+        headers: { 'user-id': ownerId }
+      })
+
+      expect(verifyResponse.ok).toBe(true)
+    })
+  })
+
+  describe('Notification System Integration', () => {
+    it('should create and manage notifications', async () => {
+      const userId = 'notification-user'
+
+      // Create a task (which should trigger notifications)
+      const taskResponse = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'user-id': userId
+        },
+        body: JSON.stringify({
+          title: 'Notification Test Task'
+        })
+      })
+
+      expect(taskResponse.ok).toBe(true)
+
+      // Check notifications
+      const notificationsResponse = await fetch('/api/notifications', {
+        headers: { 'user-id': userId }
+      })
+
+      expect(notificationsResponse.ok).toBe(true)
+      const notifications = await notificationsResponse.json()
+      expect(Array.isArray(notifications.notifications)).toBe(true)
+
+      // Mark notification as read
+      if (notifications.notifications.length > 0) {
+        const notificationId = notifications.notifications[0].id
+
+        const markReadResponse = await fetch('/api/notifications', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'user-id': userId
+          },
+          body: JSON.stringify({
+            notification_ids: [notificationId],
+            action: 'mark_read'
+          })
+        })
+
+        expect(markReadResponse.ok).toBe(true)
+      }
+    })
+  })
+
+  describe('File Upload Integration', () => {
+    it('should upload and manage task attachments', async () => {
+      const userId = 'attachment-user'
+
+      // Create a task first
+      const taskResponse = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'user-id': userId
+        },
+        body: JSON.stringify({
+          title: 'Attachment Test Task'
+        })
+      })
+
+      expect(taskResponse.ok).toBe(true)
+      const task = await taskResponse.json()
+
+      // Create a test file (simulated)
+      const testFile = new File(['test content'], 'test.txt', { type: 'text/plain' })
+
+      // Upload attachment
+      const formData = new FormData()
+      formData.append('file', testFile)
+      formData.append('uploaded_by', userId)
+
+      const uploadResponse = await fetch(`/api/tasks/${task.id}/attachments`, {
+        method: 'POST',
+        body: formData
+      })
+
+      expect(uploadResponse.status).toBeLessThan(500) // Should not crash
+
+      // List attachments
+      const listResponse = await fetch(`/api/tasks/${task.id}/attachments`, {
+        headers: { 'user-id': userId }
+      })
+
+      expect(listResponse.ok).toBe(true)
+      const attachments = await listResponse.json()
+      expect(Array.isArray(attachments)).toBe(true)
+    })
+  })
+
+  describe('Search Integration', () => {
+    it('should search across tasks and workspaces', async () => {
+      const userId = 'search-user'
+
+      // Create test data
+      await fetch('/api/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'user-id': userId
+        },
+        body: JSON.stringify({
+          title: 'Unique Search Test Task',
+          description: 'This task contains searchable content'
+        })
+      })
+
+      // Search for the task
+      const searchResponse = await fetch('/api/tasks/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'user-id': userId
+        },
+        body: JSON.stringify({
+          search_term: 'Unique Search Test'
+        })
+      })
+
+      expect(searchResponse.ok).toBe(true)
+      const searchResults = await searchResponse.json()
+      expect(searchResults.tasks).toBeDefined()
+      expect(Array.isArray(searchResults.tasks)).toBe(true)
+    })
+  })
+
+  describe('Data Consistency', () => {
+    it('should maintain referential integrity', async () => {
+      const userId = 'consistency-user'
+
+      // Create workspace
+      const workspaceResponse = await fetch('/api/workspaces', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'user-id': userId
+        },
+        body: JSON.stringify({
+          name: 'Consistency Test Workspace'
+        })
+      })
+
+      expect(workspaceResponse.ok).toBe(true)
+      const workspace = await workspaceResponse.json()
+
+      // Create task in workspace
+      const taskResponse = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'user-id': userId
+        },
+        body: JSON.stringify({
+          title: 'Consistency Test Task',
+          workspace_id: workspace.id
+        })
+      })
+
+      expect(taskResponse.ok).toBe(true)
+      const task = await taskResponse.json()
+
+      // Delete workspace
+      const deleteWorkspaceResponse = await fetch('/api/workspaces', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'user-id': userId
+        },
+        body: JSON.stringify({ id: workspace.id })
+      })
+
+      expect(deleteWorkspaceResponse.ok).toBe(true)
+
+      // Verify task is also deleted (cascade delete)
+      const verifyTaskResponse = await fetch(`/api/tasks/${task.id}`, {
+        headers: { 'user-id': userId }
+      })
+
+      expect(verifyTaskResponse.status).toBe(404)
+    })
+
+    it('should handle concurrent operations safely', async () => {
+      const userId = 'concurrency-user'
+      const operationCount = 10
+
+      // Perform multiple concurrent operations
+      const promises = Array(operationCount).fill(null).map((_, i) =>
+        fetch('/api/tasks', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'user-id': userId
+          },
+          body: JSON.stringify({
+            title: `Concurrent Task ${i}`,
+            description: `Created at ${Date.now()}`
+          })
+        })
+      )
+
+      const results = await Promise.all(promises)
+      const successCount = results.filter(r => r.ok).length
+
+      expect(successCount).toBe(operationCount) // All operations should succeed
+
+      // Verify all tasks were created
+      const listResponse = await fetch('/api/tasks', {
+        headers: { 'user-id': userId }
+      })
+
+      expect(listResponse.ok).toBe(true)
+      const tasks = await listResponse.json()
+      expect(tasks.length).toBeGreaterThanOrEqual(operationCount)
+    })
+  })
+
+  describe('Cross-Service Integration', () => {
+    it('should integrate tasks with notifications', async () => {
+      const userId = 'integration-user'
+
+      // Create a task
+      const taskResponse = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'user-id': userId
+        },
+        body: JSON.stringify({
+          title: 'Integration Test Task',
+          description: 'Testing cross-service integration'
+        })
+      })
+
+      expect(taskResponse.ok).toBe(true)
+      const task = await taskResponse.json()
+
+      // Check if notification was created
+      const notificationsResponse = await fetch('/api/notifications', {
+        headers: { 'user-id': userId }
+      })
+
+      expect(notificationsResponse.ok).toBe(true)
+      const notifications = await notificationsResponse.json()
+
+      // Should have at least one notification about task creation
+      const taskNotifications = notifications.notifications.filter((n: any) =>
+        n.task?.id === task.id || n.data?.task_id === task.id
+      )
+
+      expect(taskNotifications.length).toBeGreaterThan(0)
+    })
+
+    it('should integrate with Telegram bot', async () => {
+      // Test Telegram webhook integration
+      const telegramUpdate = {
+        update_id: 123456,
+        message: {
+          message_id: 1,
+          from: {
+            id: 12345,
+            first_name: 'Test',
+            username: 'testuser'
+          },
+          chat: {
+            id: 12345,
+            type: 'private'
+          },
+          date: Math.floor(Date.now() / 1000),
+          text: '/start'
+        }
       }
 
-      ;(global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        status: 201,
-        json: async () => ({ id: 'template-2', ...templateData })
-      })
-
-      const response = await fetch(`${baseUrl}/api/task-templates`, {
+      const telegramResponse = await fetch('/api/telegram', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(templateData)
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(telegramUpdate)
       })
 
-      const data = await AssertionHelpers.expectApiResponse(response, 201)
-      expect(data.name).toBe(templateData.name)
-      expect(data.template_data).toEqual(templateData.template_data)
+      expect(telegramResponse.ok).toBe(true)
+      const responseText = await telegramResponse.text()
+      expect(responseText).toBe('OK')
     })
   })
 
-  describe('Validation & Error Handling', () => {
-    it('POST /api/tasks - should validate required fields', async () => {
-      ;(global.fetch as any).mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        json: async () => ({ error: 'Title and template_data are required' })
-      })
+  describe('Error Handling Integration', () => {
+    it('should handle network failures gracefully', async () => {
+      // Test with invalid endpoints
+      const invalidResponse = await fetch('/api/nonexistent-endpoint')
+      expect(invalidResponse.status).toBe(404)
+    })
 
-      const response = await fetch(`${baseUrl}/api/tasks`, {
+    it('should validate request data', async () => {
+      // Test with invalid data
+      const invalidResponse = await fetch('/api/tasks', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
+        headers: {
+          'Content-Type': 'application/json',
+          'user-id': 'test-user'
+        },
+        body: JSON.stringify({
+          // Missing required title
+          description: 'Invalid task data'
+        })
       })
 
-      expect(response.status).toBe(400)
-      const error = await response.json()
-      expect(error.error).toContain('required')
+      expect(invalidResponse.status).toBeGreaterThanOrEqual(400)
     })
 
-    it('GET /api/tasks/[id] - should handle not found', async () => {
-      ;(global.fetch as any).mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-        json: async () => ({ error: 'Task not found' })
+    it('should handle database errors appropriately', async () => {
+      // Test with malformed IDs
+      const malformedResponse = await fetch('/api/tasks/invalid-id', {
+        headers: { 'user-id': 'test-user' }
       })
 
-      const response = await fetch(`${baseUrl}/api/tasks/non-existent-id`)
-      expect(response.status).toBe(404)
-    })
-
-    it('should handle database errors gracefully', async () => {
-      const mockSupabase = MockUtils.mockSupabaseClient()
-      mockSupabase.select.mockResolvedValue(MockUtils.mockApiResponse(null, {
-        code: 'PGRST116',
-        message: 'Database connection error'
-      }))
-
-      ;(global.fetch as any).mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        json: async () => ({ error: 'Internal server error' })
-      })
-
-      const response = await fetch(`${baseUrl}/api/tasks`)
-      expect(response.status).toBe(500)
-    })
-  })
-
-  describe('Performance Tests', () => {
-    it('API responses should be fast', async () => {
-      const startTime = performance.now()
-
-      ;(global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => [TestDataFactory.createTask()]
-      })
-
-      await fetch(`${baseUrl}/api/tasks`)
-      const duration = performance.now() - startTime
-
-      // API should respond within 500ms (reasonable for integration test)
-      expect(duration).toBeLessThan(500)
+      expect(malformedResponse.status).toBeLessThan(500) // Should not be server error
     })
   })
 })
