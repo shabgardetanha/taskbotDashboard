@@ -121,8 +121,8 @@ export default function KanbanPage() {
         .from('tasks')
         .select(`
           *,
-          labels:task_label_links(
-            label:task_labels(*)
+          labels:task_label_links!inner(
+            task_labels(*)
           )
         `)
         .order('position', { ascending: true })
@@ -253,8 +253,8 @@ export default function KanbanPage() {
         .from('tasks')
         .select(`
           *,
-          labels:task_label_links(
-            label:task_labels(*)
+          labels:task_label_links!inner(
+            task_labels(*)
           )
         `)
         .order('position', { ascending: true })
