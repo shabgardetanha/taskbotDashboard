@@ -415,3 +415,11 @@ export function useOfflineCaching() {
     strategy,
   }
 }
+
+export const STALE_TIMES = {
+  tasks: 2 * 60 * 1000,
+  subtasks: 2 * 60 * 1000,
+  labels: 10 * 60 * 1000,
+  workspaces: 5 * 60 * 1000,
+  userProfile: 15 * 60 * 1000
+} as const;

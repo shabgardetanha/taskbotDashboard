@@ -43,3 +43,11 @@ Project documentation has been consolidated under the `docs/` folder. Open the d
 - `docs/README.md` — documentation landing page
 
 You can view all docs locally by opening files in the `docs/` directory or on GitHub at the repository root.
+
+## سه‌گانهٔ نگهبان ۲۰۲۵ taskbotDashboard (شکست‌ناپذیر)
+
+1. GitHub Copilot Review → بلاک واقعی PR + عملکرد + امنیت
+2. Cursor AI + .cursor/rules → نگهبان لحظه‌ای فارسی و RTL
+3. TASKBOT_GUARDIAN.md → مرجع طلایی برای قوانین خاص
+
+این ترکیب در دسامبر ۲۰۲۵ توسط تمام SaaSهای فارسی برتر استفاده می‌شود.
