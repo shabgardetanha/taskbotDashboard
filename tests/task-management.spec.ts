@@ -154,11 +154,12 @@ test.describe('Task Management - Happy Path Scenarios', () => {
 test.describe('Task Management - Negative & Edge Cases', () => {
   let dashboardPage: DashboardPage;
   let kanbanPage: KanbanPage;
+  const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
 
   test.beforeEach(async ({ page }) => {
     dashboardPage = new DashboardPage(page);
     kanbanPage = new KanbanPage(page);
-    await page.goto('http://localhost:3000/dashboard/kanban');
+    await page.goto(`${baseUrl}/dashboard/kanban`);
     await page.waitForLoadState('networkidle');
   });
 
@@ -257,11 +258,12 @@ test.describe('Task Management - Negative & Edge Cases', () => {
 test.describe('Task Management - Security Tests', () => {
   let dashboardPage: DashboardPage;
   let kanbanPage: KanbanPage;
+  const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
 
   test.beforeEach(async ({ page }) => {
     dashboardPage = new DashboardPage(page);
     kanbanPage = new KanbanPage(page);
-    await page.goto('http://localhost:3000/dashboard/kanban');
+    await page.goto(`${baseUrl}/dashboard/kanban`);
     await page.waitForLoadState('networkidle');
   });
 
