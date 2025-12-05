@@ -1,5 +1,5 @@
 /// <reference types="vitest/globals" />
-import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect } from 'vitest'
 
 // Chaos Engineering Testing Suite
 describe('Chaos Engineering Testing', () => {

@@ -1,8 +1,8 @@
 /// <reference types="vitest/globals" />
 import { describe, it, expect, vi } from 'vitest'
 import { execSync } from 'child_process'
-import fs from 'fs'
-import path from 'path'
+import * as fs from 'fs'
+import * as path from 'path'
 
 // OWASP Top 10 Security Tests
 describe('OWASP Top 10 Security Testing', () => {

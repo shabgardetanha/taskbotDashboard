@@ -20,11 +20,15 @@ import {
   Sun,
   User,
   X,
-  Zap
+  Zap,
+  Clock,
+  Activity,
+  TrendingUp,
+  Target
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useMemo, memo, Suspense } from 'react'
 
 interface NavigationItem {
   name: string
@@ -85,6 +89,72 @@ const navigation: NavigationItem[] = [
     description: 'قالب‌های آماده'
   },
 ]
+
+// Performance Dashboard Component
+const PerformanceDashboard = memo(() => {
+  const [metrics, setMetrics] = useState({
+    tasksToday: 0,
+    completionRate: 0,
+    activeTime: '0h 0m',
+    streak: 0
+  })
+
+  useEffect(() => {
+    // Simulate fetching performance metrics
+    const fetchMetrics = () => {
+      setMetrics({
+        tasksToday: Math.floor(Math.random() * 10) + 1,
+        completionRate: Math.floor(Math.random() * 40) + 60,
+        activeTime: `${Math.floor(Math.random() * 8) + 1}h ${Math.floor(Math.random() * 60)}m`,
+        streak: Math.floor(Math.random() * 15) + 1
+      })
+    }
+
+    fetchMetrics()
+    const interval = setInterval(fetchMetrics, 30000) // Update every 30 seconds
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <div className="px-4 py-3 border-t border-gray-200/50 dark:border-gray-700/50">
+      <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+        عملکرد امروز
+      </h3>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Target className="w-3 h-3 text-blue-500" />
+            <span className="text-xs text-gray-600 dark:text-gray-300">وظایف</span>
+          </div>
+          <span className="text-xs font-medium text-gray-900 dark:text-white">{metrics.tasksToday}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-3 h-3 text-green-500" />
+            <span className="text-xs text-gray-600 dark:text-gray-300">نرخ تکمیل</span>
+          </div>
+          <span className="text-xs font-medium text-green-600">{metrics.completionRate}%</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Clock className="w-3 h-3 text-orange-500" />
+            <span className="text-xs text-gray-600 dark:text-gray-300">زمان فعالیت</span>
+          </div>
+          <span className="text-xs font-medium text-gray-900 dark:text-white">{metrics.activeTime}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Activity className="w-3 h-3 text-purple-500" />
+            <span className="text-xs text-gray-600 dark:text-gray-300">پی در پی</span>
+          </div>
+          <span className="text-xs font-medium text-purple-600">{metrics.streak} روز</span>
+        </div>
+      </div>
+    </div>
+  )
+})
+
+PerformanceDashboard.displayName = 'PerformanceDashboard'
 
 export default function DashboardLayoutClient({
   children,
@@ -159,9 +229,28 @@ export default function DashboardLayoutClient({
     onNavigateAnalytics: () => router.push('/dashboard/analytics'),
   })
 
-  // Determine if we're on mobile/desktop
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024
-  const sidebarWidth = sidebarCollapsed ? 'w-16' : 'w-72'
+  // Memoized mobile detection with debounced resize handling
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024)
+
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout
+
+    const handleResize = () => {
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
+        setWindowWidth(window.innerWidth)
+      }, 100) // Debounce resize events
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => {
+      clearTimeout(timeoutId)
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
+
+  const isMobile = useMemo(() => windowWidth < 1024, [windowWidth])
+  const sidebarWidth = useMemo(() => sidebarCollapsed ? 'w-16' : 'w-72', [sidebarCollapsed])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -183,8 +272,8 @@ export default function DashboardLayoutClient({
 
       {/* Desktop Sidebar - Always visible on desktop, collapsible */}
       {!isMobile && (
-        <div className={`fixed inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${sidebarWidth}`}>
-          <div className="flex flex-col h-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-700/50 shadow-2xl">
+        <div className={`fixed inset-y-0 right-0 z-40 transition-all duration-300 ease-in-out ${sidebarWidth}`}>
+          <div className="flex flex-col h-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-l border-gray-200/50 dark:border-gray-700/50 shadow-2xl">
             <SidebarContent
               navigation={navigation}
               pathname={pathname}
@@ -198,7 +287,7 @@ export default function DashboardLayoutClient({
       )}
 
       {/* Main Content Area */}
-      <div className={`transition-all duration-300 ease-in-out ${isMobile ? 'pl-0' : sidebarCollapsed ? 'pl-16' : 'pl-72'}`}>
+      <div className={`transition-all duration-300 ease-in-out ${isMobile ? 'pr-0' : sidebarCollapsed ? 'pr-16' : 'pr-72'}`}>
         {/* Mobile Header - Only on mobile */}
         {isMobile && (
           <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 shadow-lg">
@@ -255,6 +344,55 @@ export default function DashboardLayoutClient({
         <main className="flex-1 min-h-screen">
           {children}
         </main>
+
+        {/* Floating Action Button for Quick Task Creation - Desktop Only */}
+        {!isMobile && (
+          <div className="fixed bottom-6 left-6 z-30">
+            <Link
+              href="/dashboard/kanban"
+              className="group relative bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 hover:rotate-12"
+              aria-label="ایجاد وظیفه سریع"
+            >
+              <Plus className="w-6 h-6" />
+              <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-3 py-1 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                ایجاد وظیفه جدید
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+              </div>
+            </Link>
+          </div>
+        )}
+
+        {/* Quick Action Bar - Desktop Only */}
+        {!isMobile && (
+          <div className="fixed bottom-6 right-6 z-30 flex flex-col gap-3">
+            {/* Search Quick Action */}
+            <Link
+              href="/dashboard/search"
+              className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-3 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 border border-gray-200/50 dark:border-gray-700/50"
+              aria-label="جستجوی سریع"
+            >
+              <Search className="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-blue-500 transition-colors" />
+            </Link>
+
+            {/* Calendar Quick Action */}
+            <Link
+              href="/dashboard/calendar"
+              className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-3 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 border border-gray-200/50 dark:border-gray-700/50"
+              aria-label="تقویم"
+            >
+              <Calendar className="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-green-500 transition-colors" />
+            </Link>
+
+            {/* Analytics Quick Action */}
+            <Link
+              href="/dashboard/analytics"
+              className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-3 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 border border-gray-200/50 dark:border-gray-700/50"
+              aria-label="تحلیل‌ها"
+            >
+              <BarChart3 className="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-pink-500 transition-colors" />
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -380,6 +518,13 @@ function SidebarContent({
           )
         })}
       </nav>
+
+      {/* Performance Dashboard */}
+      {!isCollapsed && !isMobile && (
+        <Suspense fallback={<div className="px-4 py-3 text-xs text-gray-500">در حال بارگذاری...</div>}>
+          <PerformanceDashboard />
+        </Suspense>
+      )}
 
       {/* Footer */}
       {!isCollapsed && (
