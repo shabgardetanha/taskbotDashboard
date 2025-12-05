@@ -2,11 +2,11 @@
 
 export const dynamic = 'force-dynamic'
 
+import { AnalyticsDashboard } from '@/components/AnalyticsDashboard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { AnalyticsDashboard } from '@/components/AnalyticsDashboard'
 import { supabase } from '@/lib/supabase'
-import { BarChart3, Calendar, CheckCircle, Clock, TrendingUp, Users, AlertTriangle, Target } from 'lucide-react'
+import { AlertTriangle, BarChart3, Calendar, CheckCircle, Clock, Target, TrendingUp, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 interface AnalyticsData {

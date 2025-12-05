@@ -6,16 +6,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { useWorkspace } from '@/contexts/workspace-context'
 import {
+  Activity,
+  AlertTriangle,
   BarChart3,
-  TrendingUp,
-  Users,
+  Calendar,
   CheckSquare,
   Clock,
-  AlertTriangle,
-  Calendar,
+  PieChart,
   Target,
-  Activity,
-  PieChart
+  TrendingUp,
+  Users
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
@@ -127,8 +127,7 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
         ]
       }
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // NOTE: removed artificial delay used for demo; replace with real analytics API call when available
       setAnalytics(mockData)
     } catch (error) {
       console.error('Error loading analytics:', error)

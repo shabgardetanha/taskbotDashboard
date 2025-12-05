@@ -2,17 +2,18 @@
 
 export const dynamic = 'force-dynamic'
 
+import { NotificationsDropdown } from '@/components/NotificationsDropdown'
+import { TaskDetailModal } from '@/components/TaskDetailModal'
+import { TaskFilters } from '@/components/TaskFilters'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { TaskDetailModal } from '@/components/TaskDetailModal'
-import { NotificationsDropdown } from '@/components/NotificationsDropdown'
+import { ErrorState, TaskEmptyState } from '@/components/ui/empty-state'
 import { KanbanColumnSkeleton } from '@/components/ui/loading'
-import { TaskEmptyState, ErrorState } from '@/components/ui/empty-state'
+import { toast } from '@/components/ui/toast'
 import { WorkspaceSelector } from '@/components/WorkspaceSelector'
 import { useScreenReader } from '@/hooks/useAccessibility'
 import { supabase } from '@/lib/supabase'
-import { toast } from '@/components/ui/toast'
-import { Calendar, CheckSquare, RefreshCw, Users, Filter, ArrowUpDown, Grid3X3 } from 'lucide-react'
+import type { DragEndEvent } from '@dnd-kit/core'
 import {
   closestCenter,
   DndContext,
@@ -21,8 +22,8 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
-import type { DragEndEvent } from '@dnd-kit/core'
-import { useEffect, useState, useCallback } from 'react'
+import { ArrowUpDown, Calendar, CheckSquare, Filter, Grid3X3, RefreshCw, Users } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 type Task = {
   id: number
@@ -80,6 +81,22 @@ const formatDueDate = (dueDate?: string, dueTime?: string) => {
 
 export default function KanbanPage() {
   const [tasks, setTasks] = useState<Task[]>([])
+  // Filters state for the TaskFilters panel
+  interface FilterOptions {
+    priorities: string[]
+    statuses: string[]
+    labels: string[]
+    dateRange: { from: string; to: string }
+    searchTerm: string
+  }
+  const [filters, setFilters] = useState<FilterOptions>({
+    priorities: [],
+    statuses: [],
+    labels: [],
+    dateRange: { from: '', to: '' },
+    searchTerm: ''
+  })
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -125,6 +142,44 @@ export default function KanbanPage() {
       announceLoading(false)
     }
   }, [])
+
+  // Derived filtered tasks (apply UI filters without mutating the source tasks)
+  const filteredTasks = useMemo(() => {
+    let out = tasks
+
+    if (!filters) return out
+
+    // Search term
+    if (filters.searchTerm) {
+      const term = filters.searchTerm.toLowerCase()
+      out = out.filter(t => (t.title || '').toLowerCase().includes(term) || (t.description || '').toLowerCase().includes(term))
+    }
+
+    // Priorities
+    if (filters.priorities && filters.priorities.length > 0) {
+      out = out.filter(t => filters.priorities.includes(t.priority))
+    }
+
+    // Statuses
+    if (filters.statuses && filters.statuses.length > 0) {
+      out = out.filter(t => filters.statuses.includes(t.status))
+    }
+
+    // Labels
+    if (filters.labels && filters.labels.length > 0) {
+      out = out.filter(t => (t.labels || []).some(l => filters.labels.includes(l.id)))
+    }
+
+    // Date range
+    if (filters.dateRange?.from) {
+      out = out.filter(t => t.due_date && t.due_date >= filters.dateRange.from)
+    }
+    if (filters.dateRange?.to) {
+      out = out.filter(t => t.due_date && t.due_date <= filters.dateRange.to)
+    }
+
+    return out
+  }, [tasks, filters])
 
   const handleTaskClick = (task: Task) => {
     setSelectedTask(task)
@@ -244,7 +299,7 @@ export default function KanbanPage() {
             {/* Task Count */}
             <div className="text-center px-3 py-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-gray-700/50">
               <div className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
-                {tasks.length}
+                  {filteredTasks.length}
               </div>
               <div className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
                 کل وظایف
@@ -284,7 +339,11 @@ export default function KanbanPage() {
               <span className="text-sm">ترتیب</span>
             </button>
 
-            <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+            <button
+              onClick={() => setIsFiltersOpen(prev => !prev)}
+              aria-pressed={isFiltersOpen}
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200"
+            >
               <Filter className="w-4 h-4" />
               <span className="text-sm">فیلتر</span>
             </button>
@@ -296,12 +355,19 @@ export default function KanbanPage() {
           </div>
         </div>
 
+        {/* Task Filters panel (collapsible) */}
+        {isFiltersOpen && (
+          <div className="mb-6">
+            <TaskFilters onFilterChange={(f) => setFilters(f)} availableLabels={[]} />
+          </div>
+        )}
+
         {/* Enhanced Stats Bar */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
           {Object.entries(columns).map(([key, title]) => {
-            const count = tasks.filter(t => t.status === key).length
-            const percentage = tasks.length > 0 ? Math.round((count / tasks.length) * 100) : 0
-            const overdueTasks = tasks.filter(t =>
+            const count = filteredTasks.filter(t => t.status === key).length
+            const percentage = filteredTasks.length > 0 ? Math.round((count / filteredTasks.length) * 100) : 0
+            const overdueTasks = filteredTasks.filter(t =>
               t.status === key &&
               t.due_date &&
               new Date(t.due_date) < new Date() &&
@@ -386,7 +452,7 @@ export default function KanbanPage() {
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
             {Object.entries(columns).map(([key, title]) => {
-              const columnTasks = tasks.filter((t) => t.status === key).sort((a, b) => {
+              const columnTasks = filteredTasks.filter((t) => t.status === key).sort((a, b) => {
                 // Sort by position first, then by priority, then by due date
                 if (a.position !== b.position) {
                   return (a.position || 0) - (b.position || 0)

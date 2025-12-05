@@ -5,15 +5,15 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { useAuth } from '@/contexts/auth-context'
 import {
-  Bell,
-  Check,
-  CheckCheck,
-  Trash2,
-  Calendar,
-  MessageCircle,
-  Users,
-  AlertCircle,
-  Clock
+    AlertCircle,
+    Bell,
+    Calendar,
+    Check,
+    CheckCheck,
+    Clock,
+    MessageCircle,
+    Trash2,
+    Users
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
@@ -50,6 +50,29 @@ export function NotificationsDropdown({ className }: NotificationsDropdownProps)
     if (user) {
       loadNotifications()
     }
+  }, [user])
+
+  // Quick prefetch of unread count for faster UI feedback
+  useEffect(() => {
+    if (!user) return
+    let cancelled = false
+
+    const prefetchUnread = async () => {
+      try {
+        const res = await fetch(`/api/notifications?user_id=${user.id}&limit=1&unread_only=true`)
+        if (!res.ok) return
+        const json = await res.json()
+
+        // API returns `total` when count is available; fall back to notifications array length
+        const total = typeof json.total === 'number' ? json.total : (Array.isArray(json.notifications) ? json.notifications.length : 0)
+        if (!cancelled) setUnreadCount(total)
+      } catch (e) {
+        // ignore prefetch errors — we'll load full list shortly
+      }
+    }
+
+    prefetchUnread()
+    return () => { cancelled = true }
   }, [user])
 
   const loadNotifications = async () => {

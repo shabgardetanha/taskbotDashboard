@@ -1,28 +1,30 @@
 'use client'
 
+import { NotificationsDropdown } from '@/components/NotificationsDropdown'
+import { WorkspaceSelector } from '@/components/WorkspaceSelector'
+import { useAccessibility } from '@/hooks/useAccessibility'
+import { useDashboardShortcuts } from '@/hooks/useKeyboardShortcuts'
+import {
+  BarChart3,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  Home,
+  Kanban,
+  Menu,
+  Moon,
+  Plus,
+  Search,
+  Settings,
+  Sun,
+  User,
+  X,
+  Zap
+} from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import {
-  Calendar,
-  Kanban,
-  Search,
-  BarChart3,
-  Home,
-  Menu,
-  X,
-  FileText,
-  Settings,
-  User,
-  Moon,
-  Sun,
-  Plus,
-  Zap,
-  ChevronLeft,
-  ChevronRight
-} from 'lucide-react'
-import { useState, useEffect, useCallback } from 'react'
-import { WorkspaceSelector } from '@/components/WorkspaceSelector'
-import { useDashboardShortcuts } from '@/hooks/useKeyboardShortcuts'
+import { useCallback, useEffect, useState } from 'react'
 
 interface NavigationItem {
   name: string
@@ -94,6 +96,9 @@ export default function DashboardLayoutClient({
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [darkMode, setDarkMode] = useState(false)
+
+  // Activate global accessibility helpers (screen reader, skip links, reduced motion, etc.)
+  useAccessibility()
 
   // Initialize theme and sidebar state
   useEffect(() => {
@@ -208,6 +213,7 @@ export default function DashboardLayoutClient({
 
               <div className="flex items-center gap-3">
                 <WorkspaceSelector compact />
+                <NotificationsDropdown />
               </div>
 
               <div className="flex items-center gap-2">
@@ -225,6 +231,24 @@ export default function DashboardLayoutClient({
               </div>
             </div>
           </header>
+        )}
+
+        {/* Desktop topbar (notifications + theme) */}
+        {!isMobile && (
+          <div className="flex items-center justify-end gap-3 p-4 border-b border-gray-200/50 dark:border-gray-700/50">
+            <NotificationsDropdown />
+            <button
+              onClick={toggleDarkMode}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 hover:scale-110"
+              aria-label={darkMode ? "حالت روز" : "حالت شب"}
+            >
+              {darkMode ? (
+                <Sun className="h-5 w-5 text-yellow-500" />
+              ) : (
+                <Moon className="h-5 w-5 text-blue-500" />
+              )}
+            </button>
+          </div>
         )}
 
         {/* Page Content */}

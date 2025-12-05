@@ -1,31 +1,14 @@
 {
-  "crawlTimestamp": "2025-12-05T02:09:52.662Z",
-  "baseUrl": "http://localhost:3000",
+  "crawlTimestamp": "2025-12-05T02:52:08.299Z",
+  "baseUrl": "http://localhost:3001",
   "summary": {
-    "pagesCrawled": 1,
+    "pagesCrawled": 0,
     "featuresDiscovered": 0,
     "apiEndpoints": 0,
     "userRoles": 5
   },
   "appMap": {
-    "pages": [
-      {
-        "url": "http://localhost:3000",
-        "title": "TaskBot Persian - مدیریت وظایف هوشمند",
-        "elements": {
-          "buttons": [],
-          "links": [],
-          "inputs": [],
-          "forms": [],
-          "selects": [],
-          "textareas": []
-        },
-        "apiCalls": [],
-        "screenshots": [
-          "tests/screenshots/http___localhost_3000.png"
-        ]
-      }
-    ],
+    "pages": [],
     "features": [],
     "userRoles": [
       "Guest User",

@@ -244,7 +244,7 @@ supabase.channel("tasks").subscribe();
 interface CreateTaskInput {
   title: string;
   description: string;
-  priority: 'urgent' | 'high' | 'medium' | 'low';
+  priority: "urgent" | "high" | "medium" | "low";
   assignee_id?: string;
   due_date?: string; // ISO 8601 format
   workspace_id: string;
@@ -254,7 +254,7 @@ interface Task extends CreateTaskInput {
   id: string;
   created_at: string;
   updated_at: string;
-  status: 'todo' | 'in-progress' | 'done';
+  status: "todo" | "in-progress" | "done";
 }
 
 interface ApiResponse<T> {
@@ -276,13 +276,13 @@ interface BadTask {
 ```typescript
 // ✅ GOOD - Type-safe constants
 export const API_ENDPOINTS = {
-  TASKS: '/api/tasks',
-  WORKSPACES: '/api/workspaces',
-  LABELS: '/api/labels',
-  SUBTASKS: '/api/subtasks',
+  TASKS: "/api/tasks",
+  WORKSPACES: "/api/workspaces",
+  LABELS: "/api/labels",
+  SUBTASKS: "/api/subtasks",
 } as const;
 
-export const TASK_PRIORITIES = ['urgent', 'high', 'medium', 'low'] as const;
+export const TASK_PRIORITIES = ["urgent", "high", "medium", "low"] as const;
 export type TaskPriority = (typeof TASK_PRIORITIES)[number];
 ```
 
@@ -294,7 +294,7 @@ export type TaskPriority = (typeof TASK_PRIORITIES)[number];
 
 ```typescript
 // ✅ GOOD - Custom hook wrapper
-export const useApiQuery = <TData,>(
+export const useApiQuery = <TData>(
   queryKey: readonly unknown[],
   queryFn: () => Promise<TData>,
   options?: {
@@ -314,7 +314,7 @@ export const useApiQuery = <TData,>(
 };
 
 // ❌ BAD - Direct useQuery
-useQuery({ queryKey: ['tasks'], queryFn: fetchTasks });
+useQuery({ queryKey: ["tasks"], queryFn: fetchTasks });
 ```
 
 **Query Keys Factory** — Centralize in `src/lib/api-client.ts`:
@@ -322,21 +322,23 @@ useQuery({ queryKey: ['tasks'], queryFn: fetchTasks });
 ```typescript
 export const queryKeys = {
   tasks: {
-    all: ['tasks'] as const,
-    byWorkspace: (workspaceId: string) => ['tasks', 'workspace', workspaceId] as const,
-    byUser: (userId: string) => ['tasks', 'user', userId] as const,
-    detail: (taskId: string) => ['tasks', 'detail', taskId] as const,
+    all: ["tasks"] as const,
+    byWorkspace: (workspaceId: string) =>
+      ["tasks", "workspace", workspaceId] as const,
+    byUser: (userId: string) => ["tasks", "user", userId] as const,
+    detail: (taskId: string) => ["tasks", "detail", taskId] as const,
   },
   labels: {
-    all: ['labels'] as const,
-    byWorkspace: (workspaceId: string) => ['labels', 'workspace', workspaceId] as const,
+    all: ["labels"] as const,
+    byWorkspace: (workspaceId: string) =>
+      ["labels", "workspace", workspaceId] as const,
   },
   subtasks: {
-    byTask: (taskId: string) => ['subtasks', 'task', taskId] as const,
+    byTask: (taskId: string) => ["subtasks", "task", taskId] as const,
   },
   workspaces: {
-    all: ['workspaces'] as const,
-    detail: (id: string) => ['workspaces', 'detail', id] as const,
+    all: ["workspaces"] as const,
+    detail: (id: string) => ["workspaces", "detail", id] as const,
   },
 } as const;
 ```
@@ -349,10 +351,10 @@ export const queryKeys = {
 // Higher = fewer API calls but potentially stale data
 
 const STALE_TIMES = {
-  tasks: 2 * 60 * 1000,        // 2 min (frequently changes)
-  labels: 10 * 60 * 1000,      // 10 min (rarely changes)
-  workspaces: 5 * 60 * 1000,   // 5 min (occasionally changes)
-  subtasks: 2 * 60 * 1000,     // 2 min (frequently changes)
+  tasks: 2 * 60 * 1000, // 2 min (frequently changes)
+  labels: 10 * 60 * 1000, // 10 min (rarely changes)
+  workspaces: 5 * 60 * 1000, // 5 min (occasionally changes)
+  subtasks: 2 * 60 * 1000, // 2 min (frequently changes)
   userProfile: 15 * 60 * 1000, // 15 min (rarely changes)
 };
 ```
@@ -366,11 +368,11 @@ export const useCreateTask = () => {
 
   return useMutation({
     mutationFn: async (input: CreateTaskInput) => {
-      const response = await fetch('/api/tasks', {
-        method: 'POST',
+      const response = await fetch("/api/tasks", {
+        method: "POST",
         body: JSON.stringify(input),
       });
-      if (!response.ok) throw new Error('Failed to create task');
+      if (!response.ok) throw new Error("Failed to create task");
       return response.json() as Promise<Task>;
     },
     onSuccess: (newTask) => {
@@ -379,10 +381,10 @@ export const useCreateTask = () => {
         queryKey: queryKeys.tasks.byWorkspace(newTask.workspace_id),
       });
       // Show Persian success toast
-      toast.success('✅ تسک با موفقیت ایجاد شد');
+      toast.success("✅ تسک با موفقیت ایجاد شد");
     },
     onError: () => {
-      toast.error('❌ خطا در ایجاد تسک');
+      toast.error("❌ خطا در ایجاد تسک");
     },
   });
 };
@@ -430,11 +432,9 @@ export const useLabels = (workspaceId: string) => {
 
 // src/hooks/workspaces/useWorkspaces.ts
 export const useWorkspaces = () => {
-  return useApiQuery(
-    queryKeys.workspaces.all,
-    fetchWorkspaces,
-    { staleTime: STALE_TIMES.workspaces }
-  );
+  return useApiQuery(queryKeys.workspaces.all, fetchWorkspaces, {
+    staleTime: STALE_TIMES.workspaces,
+  });
 };
 ```
 
@@ -442,8 +442,8 @@ export const useWorkspaces = () => {
 
 ```typescript
 interface UseApiMutationOptions<TData, TVariables> {
-  successMessage?: string;      // Persian: "تسک ایجاد شد"
-  errorMessage?: string;         // Persian: "خطا در ایجاد تسک"
+  successMessage?: string; // Persian: "تسک ایجاد شد"
+  errorMessage?: string; // Persian: "خطا در ایجاد تسک"
   invalidateQueries?: (readonly unknown[])[];
   optimisticUpdate?: (oldData: TData, variables: TVariables) => TData;
   onSuccess?: (data: TData) => void;
@@ -452,8 +452,8 @@ interface UseApiMutationOptions<TData, TVariables> {
 
 // Usage
 const mutation = useUpdateTask({
-  successMessage: 'تسک به‌روزرسانی شد',
-  errorMessage: 'خطا در به‌روزرسانی تسک',
+  successMessage: "تسک به‌روزرسانی شد",
+  errorMessage: "خطا در به‌روزرسانی تسک",
   invalidateQueries: [queryKeys.tasks.all],
 });
 ```
@@ -466,13 +466,19 @@ const mutation = useUpdateTask({
 
 ```typescript
 // ✅ GOOD - Use shadcn/ui components
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // ❌ BAD - Material-UI or other libraries
-import { Button as MuiButton } from '@mui/material';
+import { Button as MuiButton } from "@mui/material";
 ```
 
 **Dark Mode Support**:
@@ -513,7 +519,7 @@ export function TaskButton() {
       aria-label="حذف تسک"
       aria-describedby="task-help"
       onKeyDown={(e) => {
-        if (e.key === 'Enter') handleDelete();
+        if (e.key === "Enter") handleDelete();
       }}
     >
       Delete
@@ -614,6 +620,7 @@ src/
 ```
 
 **Where to Place New Files**:
+
 - 🆕 New page? → `src/app/{feature}/page.tsx` (Server Component by default)
 - 🆕 New API route? → `src/app/api/{resource}/route.ts`
 - 🆕 New hook? → `src/hooks/{domain}/{useAction}.ts`
@@ -628,8 +635,8 @@ src/
 
 ```typescript
 // src/stores/user-store.ts
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface UserState {
   userId: string | null;
@@ -649,7 +656,7 @@ export const useUserStore = create<UserState>()(
       logout: () => set({ userId: null, email: null, fullName: null }),
     }),
     {
-      name: 'user-storage', // localStorage key
+      name: "user-storage", // localStorage key
       partialize: (state) => ({
         userId: state.userId,
         email: state.email,
@@ -678,10 +685,14 @@ export function UserProfile() {
 const WorkspaceContext = createContext<WorkspaceContextType | null>(null);
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
-  const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(null);
+  const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(
+    null
+  );
 
   return (
-    <WorkspaceContext.Provider value={{ selectedWorkspace, setSelectedWorkspace }}>
+    <WorkspaceContext.Provider
+      value={{ selectedWorkspace, setSelectedWorkspace }}
+    >
       {children}
     </WorkspaceContext.Provider>
   );
@@ -689,7 +700,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
 export const useWorkspace = () => {
   const context = useContext(WorkspaceContext);
-  if (!context) throw new Error('useWorkspace must be used within WorkspaceProvider');
+  if (!context)
+    throw new Error("useWorkspace must be used within WorkspaceProvider");
   return context;
 };
 ```
@@ -702,15 +714,12 @@ export const useWorkspace = () => {
 
 ```typescript
 // ✅ GOOD - Load only when needed
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 
-const TaskDetailModal = dynamic(
-  () => import('@/components/TaskDetailModal'),
-  {
-    loading: () => <div className="h-96 bg-gray-100 animate-pulse" />,
-    ssr: false, // Client-side only
-  }
-);
+const TaskDetailModal = dynamic(() => import("@/components/TaskDetailModal"), {
+  loading: () => <div className="h-96 bg-gray-100 animate-pulse" />,
+  ssr: false, // Client-side only
+});
 
 export function TaskListPage() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -746,7 +755,7 @@ function TaskRow({ task, onSelect }: Props) {
 
 ```typescript
 // ✅ GOOD - next/image automatic optimization
-import Image from 'next/image';
+import Image from "next/image";
 
 export function UserAvatar({ url, name }: Props) {
   return (
@@ -767,12 +776,14 @@ export function UserAvatar({ url, name }: Props) {
 ## 🛡️ Prompt Injection Defense
 
 **Every PR from AI agents is scanned for**:
+
 - ❌ "ignore previous instructions" → BLOCKED
 - ❌ "DAN" (Do Anything Now) → BLOCKED
 - ❌ "jailbreak" attempts → BLOCKED
 - ❌ "forget rules" → BLOCKED
 
 **If detected**: PR blocked immediately with message:
+
 > "Prompt injection detected. PR blocked."
 
 ---

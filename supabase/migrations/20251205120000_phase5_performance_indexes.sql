@@ -81,7 +81,7 @@ WHERE workspace_id IS NOT NULL;
 -- ============================================================================
 -- PERFORMANCE NOTES
 -- ============================================================================
--- 
+--
 -- Expected Impact:
 -- - N+1 query elimination: 70% reduction in API calls (150 → 20 calls)
 -- - Query response time: 800ms → 150ms (TTFB < 400ms)
@@ -102,8 +102,8 @@ WHERE workspace_id IS NOT NULL;
 -- ============================================================================
 -- VERIFY INDEXES (Run this to check all indexes are created)
 -- ============================================================================
--- 
--- SELECT indexname FROM pg_indexes 
+--
+-- SELECT indexname FROM pg_indexes
 -- WHERE tablename IN ('tasks', 'workspace_members', 'comments', 'attachments', 'activity_logs')
 -- AND indexname LIKE 'idx_%'
 -- ORDER BY indexname;

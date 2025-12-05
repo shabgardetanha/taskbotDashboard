@@ -2,13 +2,12 @@
 
 export const dynamic = 'force-dynamic'
 
+import { TaskDetailModal } from '@/components/TaskDetailModal'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { TaskFilters } from '@/components/TaskFilters'
 import { supabase } from '@/lib/supabase'
-import { TaskDetailModal } from '@/components/TaskDetailModal'
 import { Calendar, Filter, Search, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
