@@ -47,5 +47,4 @@ You can view all docs locally by opening files in the `docs/` directory or on Gi
 ## سه‌گانهٔ نگهبان ۲۰۲۵ taskbotDashboard (شکست‌ناپذیر)
 
 1. GitHub Copilot Review → بلاک واقعی PR + عملکرد + امنیت
-2. Cursor AI + .cursor/rules → نگهبان لحظه‌ای فارسی و RTL
-3. TASKBOT_GUARDIAN.md → مرجع طلایی برای قوانین خاص
+2. TASKBOT_GUARDIAN.md → مرجع طلایی برای قوانین خاص
