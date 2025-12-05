@@ -44,7 +44,7 @@ Project documentation has been consolidated under the `docs/` folder. Open the d
 
 You can view all docs locally by opening files in the `docs/` directory or on GitHub at the repository root.
 
-## سه‌گانهٔ نگهبان ۲۰۲۵ taskbotDashboard (شکست‌ناپذیر)
+## نگهبان taskbotDashboard (شکست‌ناپذیر)
 
 1. GitHub Copilot Review → بلاک واقعی PR + عملکرد + امنیت
 2. TASKBOT_GUARDIAN.md → مرجع طلایی برای قوانین خاص
