@@ -1,0 +1,82 @@
+name: Enforce TaskBot Standards
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  enforce:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies (for scripts)
+        run: npm ci
+
+      - name: Check canonical policy sync (TASKBOT_GUARDIAN)
+        run: ./.github/scripts/check_policy_sync.sh
+
+      - name: Run Tailwind forbidden classes check
+        run: node .github/scripts/check_tailwind_classes.js
+        continue-on-error: false
+
+      - name: Run Prompt Injection check
+        run: node .github/scripts/prompt_injection_check.js "$GITHUB_EVENT_PATH"
+        continue-on-error: false
+
+      - name: Check required DB indexes
+        run: bash .github/actions/check_indexes/action.sh
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+
+      - name: Check staleTimes in hooks
+        run: node .github/scripts/check_stale_times_tsapi.ts
+        continue-on-error: false
+
+      - name: Run build & tests
+        run: |
+          npm run build
+          npm run test
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+      - name: Check performance smoke test (TTFB)
+        run: bash .github/actions/measure_ttfb/run.sh
+        env:
+          STAGING_URL: ${{ secrets.STAGING_URL }}
+
+      - name: Create enforcement status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const checkName = 'taskbot/enforce-standards';
+            const conclusion = 'success';
+            await github.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: checkName,
+              head_sha: context.payload.pull_request.head.sha,
+              status: 'completed',
+              conclusion: conclusion,
+              output: {
+                title: 'TaskBot Standards Enforcement',
+                summary: 'All checks passed.'
+              }
+            });
