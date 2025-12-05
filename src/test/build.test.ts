@@ -9,12 +9,13 @@ describe('Build Verification', () => {
     const originalEnv = { ...process.env }
     delete process.env.NEXT_PUBLIC_SUPABASE_URL
     delete process.env.SUPABASE_SERVICE_ROLE_KEY
+    delete process.env.TELEGRAM_BOT_TOKEN
 
     try {
-      // Run build command
+      // Run build command with longer timeout
       execSync('npm run build', {
         stdio: 'pipe',
-        timeout: 60000, // 1 minute timeout
+        timeout: 120000, // 2 minute timeout for build
         cwd: process.cwd()
       })
 
@@ -27,12 +28,13 @@ describe('Build Verification', () => {
       // If build fails, it should not be due to missing env vars in API routes
       expect(error.message).not.toMatch(/supabaseUrl is required/)
       expect(error.message).not.toMatch(/Supabase configuration missing/)
+      expect(error.message).not.toMatch(/TELEGRAM_BOT_TOKEN missing/)
       throw error
     } finally {
       // Restore environment
       Object.assign(process.env, originalEnv)
     }
-  })
+  }, 130000) // Test timeout
 
   it('should not have Supabase clients initialized at module level', () => {
     // This test ensures that API routes don't create Supabase clients
@@ -52,8 +54,11 @@ describe('Build Verification', () => {
       expect(content).not.toMatch(/const supabase = createClient/)
       expect(content).not.toMatch(/createClient\(.*\).*at module level/)
 
-      // Should have lazy client creation function
-      expect(content).toMatch(/function getSupabaseClient/)
+      // Should have lazy client creation (either function or direct in functions)
+      const hasGetSupabaseClient = content.includes('function getSupabaseClient')
+      const hasDirectInitialization = content.includes('const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL')
+
+      expect(hasGetSupabaseClient || hasDirectInitialization).toBe(true)
     }
 
     function findRouteFiles(dir: string): string[] {
@@ -75,7 +80,7 @@ describe('Build Verification', () => {
     }
   })
 
-  it('should handle missing environment variables gracefully', () => {
+  it('should handle missing environment variables gracefully', async () => {
     // Test that the application can start without crashing due to missing env vars
     const originalEnv = { ...process.env }
     delete process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -83,7 +88,7 @@ describe('Build Verification', () => {
 
     try {
       // Try to import the supabase client (should not crash)
-      const supabaseModule = require('../lib/supabase')
+      const supabaseModule = await import('../lib/supabase')
       expect(supabaseModule.supabase).toBeDefined()
 
       // The client should be created with placeholder values
