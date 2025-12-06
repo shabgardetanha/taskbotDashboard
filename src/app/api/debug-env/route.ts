@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Get all environment variables that contain SUPABASE or RAILWAY
     const envVars = Object.keys(process.env)
