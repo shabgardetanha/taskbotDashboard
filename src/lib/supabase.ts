@@ -1,8 +1,7 @@
 // src/lib/supabase.ts - Supabase client utilities
 import { createClient } from '@supabase/supabase-js'
 
-// Cache for client instances to avoid recreation
-let supabaseClient: any = null
+// Note: Using Proxy for lazy loading, no global cache needed
 
 // Get environment variables safely
 const getSupabaseUrl = (): string => {
