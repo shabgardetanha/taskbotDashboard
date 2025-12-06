@@ -62,13 +62,7 @@ const createClientInstance = () => {
   })
 }
 
-// Lazy-loaded client creation
-const getSupabaseClient = (): any => {
-  if (!supabaseClient) {
-    supabaseClient = createClientInstance()
-  }
-  return supabaseClient
-}
+// Note: Using Proxy for truly lazy loading instead of this function
 
 // Export functions that create clients on demand
 export const createSupabaseClient = () => createClientInstance()
