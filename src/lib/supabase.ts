@@ -26,20 +26,24 @@ const getSupabaseKey = (): string => {
            process.env.RAILWAY_SUPABASE_SERVICE_ROLE_KEY ||
            (typeof window !== 'undefined' ? (window as any).env?.SUPABASE_SERVICE_ROLE_KEY : undefined)
 
-  // Debug logging in development
-  if (typeof window === 'undefined' && process.env.NODE_ENV !== 'production') {
-    console.log('Environment variables available:', Object.keys(process.env).filter(k => k.includes('SUPABASE') || k.includes('RAILWAY')))
+  // Debug logging - always log in Railway for debugging
+  if (typeof window === 'undefined') {
+    console.log('🔑 SUPABASE_SERVICE_ROLE_KEY access debug:')
+    console.log('- process.env.SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? 'SET (length: ' + process.env.SUPABASE_SERVICE_ROLE_KEY.length + ')' : 'UNDEFINED')
+    console.log('- process.env.RAILWAY_SUPABASE_SERVICE_ROLE_KEY:', process.env.RAILWAY_SUPABASE_SERVICE_ROLE_KEY ? 'SET' : 'UNDEFINED')
+    console.log('- Final key value:', key ? 'SET (length: ' + key.length + ')' : 'UNDEFINED')
+    console.log('- NODE_ENV:', process.env.NODE_ENV)
   }
 
   if (!key) {
     // In Railway/production, environment variables should be available at runtime
     if (typeof window === 'undefined' && process.env.NODE_ENV === 'production') {
-      console.error('SUPABASE_SERVICE_ROLE_KEY environment variable is required in production')
-      console.error('Available env vars:', Object.keys(process.env))
+      console.error('❌ SUPABASE_SERVICE_ROLE_KEY environment variable is required in production')
+      console.error('Available env vars with SUPABASE:', Object.keys(process.env).filter(k => k.includes('SUPABASE')))
       throw new Error('SUPABASE_SERVICE_ROLE_KEY environment variable is required')
     }
     // In development or build time, use placeholder
-    console.warn('SUPABASE_SERVICE_ROLE_KEY not found, using placeholder')
+    console.warn('⚠️ SUPABASE_SERVICE_ROLE_KEY not found, using placeholder')
     return 'placeholder-service-key'
   }
   return key
