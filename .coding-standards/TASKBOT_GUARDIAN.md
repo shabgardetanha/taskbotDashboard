@@ -141,6 +141,9 @@ full_cycle_testing_45:
     # Dashboard & UI (New - Mandatory)
     - dashboard_integration_testing
 
+    # Database Query Validation (New - Mandatory)
+    - database_query_validation_testing
+
     # Non-Functional
     - performance_load_testing
     - performance_stress_testing
