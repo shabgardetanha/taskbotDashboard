@@ -76,8 +76,8 @@ export const createSupabaseClient = () => createClientInstance()
 // Default client instance - truly lazy loaded (only created when accessed)
 export const supabase = (() => {
   let instance: any = null
-  return new Proxy({}, {
-    get(target, prop) {
+  return new Proxy({} as any, {
+    get(_target, prop) {
       if (!instance) {
         console.log('🚀 Creating Supabase client instance on first access')
         instance = createClientInstance()
