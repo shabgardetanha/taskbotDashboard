@@ -1,5 +1,5 @@
 <!-- canonical: true -->
-<!-- version: 2025-12-06-v3 -->
+<!-- version: 2025-12-06-v4 -->
 
 # TASKBOT_GUARDIAN.md — Golden Canonical Reference for TaskBot Dashboard (Final Version — December 2025)
 
@@ -40,7 +40,7 @@ Lists above 50 items: virtualization required (@tanstack/react-virtual or react-
 
 Heavy components (> 50KB): must use dynamic import with ssr: false and loading skeleton.
 
-Server Components that fetch async data: must be wrapped in <Suspense fallback={<Skeleton />}>.
+Server Components that fetch async data: must be wrapped in <Suspense fallback={<Skeleton />}>..
 
 ### 3) Next.js Structure and API
 Dashboard pages (src/app/dashboard, src/app/webapp) must be Server Components and directly await.
@@ -101,13 +101,13 @@ Each PR must fill the table below in description; absence or deterioration of me
 | DB queries per request | ? | ? | ≤ 3 |
 | Telegram webhook response | ? ms | ? ms | < 1400ms |
 
-### 11) Complete Project Testing — 44 Mandatory Tests (Full-Cycle Testing Matrix 2025–2026)
+### 11) Complete Project Testing — 45 Mandatory Tests (Full-Cycle Testing Matrix 2025–2026)
 
-Each PR that includes logical change, new feature, refactoring, or even one line of code, **MUST pass all 44 tests below**.
+Each PR that includes logical change, new feature, refactoring, or even one line of code, **MUST pass all 45 tests below**.
 Failure of even one = automatic PR block.
 
 ```yaml
-full_cycle_testing_44:
+full_cycle_testing_45:
   required: true
   auto_block_if_failed: true
   tests:
@@ -137,6 +137,9 @@ full_cycle_testing_44:
     - database_connection_testing
     - database_crud_testing
     - database_integration_testing
+
+    # Dashboard & UI (New - Mandatory)
+    - dashboard_integration_testing
 
     # Non-Functional
     - performance_load_testing
@@ -180,22 +183,23 @@ full_cycle_testing_44:
     - mobile_network_iran_testing
 ```
 
-CI/CD must execute 100% of these 44 tests (with Playwright, Cypress, k6, OWASP ZAP, Jest, Pact, Chaos Monkey, etc. including 3 new database tests)
+CI/CD must execute 100% of these 45 tests (with Playwright, Cypress, k6, OWASP ZAP, Jest, Pact, Chaos Monkey, etc. including 4 new database & dashboard tests)
 
 ### 12) Test Report in Each PR (Required)
 Each PR must fill this table in its description:
 
-| Complete Project Testing (44 items) | Status |
+| Complete Project Testing (45 items) | Status |
 |-------------------------|--------|
 | Unit + Integration | Passed |
 | Database (Connection/CRUD/Integration) | Passed |
+| Dashboard (Integration & Error Detection) | Passed |
 | E2E + Smoke | Passed |
 | Performance (Load/Stress) | Passed (< 1.5s P95) |
 | Security (ZAP + PenTest) | Passed (No High/Critical) |
 | Accessibility (WCAG 2.2) | Passed (AA) |
 | Chaos & Failover | Passed |
 | Sanctions + Payment Gateway | Passed |
-| **Total 44 Tests** | **Passed 44/44** |
+| **Total 45 Tests** | **Passed 45/45** |
 
 If even one test Fails or Skips → PR blocked.
 
@@ -211,16 +215,17 @@ policy_meta:
         - check_stale_times
         - check_indexes
         - prompt_injection_check
-        - run_full_44_tests          # New — Mandatory (includes 3 database tests)
-        - validate_test_report_table # Checks if 44-test table is filled
+        - run_full_45_tests          # New — Mandatory (includes 4 database & dashboard tests)
+        - validate_test_report_table # Checks if 45-test table is filled
   prompt_injection_message: "Prompt injection detected. PR blocked."
-  full_cycle_tests_required: 44
+  full_cycle_tests_required: 45
   block_on_test_failure: true
-  canonical_version: "2025-12-06-v3"
+  canonical_version: "2025-12-06-v4"
 ```
 
 ## Changelog
 
+- v2025-12-06-v4 — Added dashboard integration testing category + updated to 45 complete tests + task loading error detection tests.
 - v2025-12-06-v3 — Added 3 mandatory database testing categories (Database Connection, CRUD, Integration Testing) + updated to 44 complete tests + CI machine readable for database tests.
 - v2025-12-05-v2 — Added complete 41 mandatory tests section + CI machine readable + PR test report table + automatic block on any test failure.
 - v2025-12-05 — Initial canonicalization.
