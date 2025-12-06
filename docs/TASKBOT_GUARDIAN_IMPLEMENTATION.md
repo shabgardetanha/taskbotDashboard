@@ -25,6 +25,7 @@ src/test/
 ├── database-connection.test.ts    # Database Connection Testing
 ├── database-crud.test.ts          # Database CRUD Testing
 ├── database-integration.test.ts   # Database Integration Testing
+├── dashboard-integration.test.ts  # Dashboard Integration Testing
 ├── system.test.ts                 # System Testing
 ├── e2e/                           # End-to-End Testing (Playwright)
 ├── performance/                   # Performance Testing Suite
