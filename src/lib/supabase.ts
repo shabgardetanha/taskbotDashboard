@@ -21,11 +21,21 @@ const getSupabaseUrl = (): string => {
 }
 
 const getSupabaseKey = (): string => {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  // Try multiple ways to access the environment variable (Railway compatibility)
+  let key = process.env.SUPABASE_SERVICE_ROLE_KEY ||
+           process.env.RAILWAY_SUPABASE_SERVICE_ROLE_KEY ||
+           (typeof window !== 'undefined' ? (window as any).env?.SUPABASE_SERVICE_ROLE_KEY : undefined)
+
+  // Debug logging in development
+  if (typeof window === 'undefined' && process.env.NODE_ENV !== 'production') {
+    console.log('Environment variables available:', Object.keys(process.env).filter(k => k.includes('SUPABASE') || k.includes('RAILWAY')))
+  }
 
   if (!key) {
     // In Railway/production, environment variables should be available at runtime
     if (typeof window === 'undefined' && process.env.NODE_ENV === 'production') {
+      console.error('SUPABASE_SERVICE_ROLE_KEY environment variable is required in production')
+      console.error('Available env vars:', Object.keys(process.env))
       throw new Error('SUPABASE_SERVICE_ROLE_KEY environment variable is required')
     }
     // In development or build time, use placeholder
