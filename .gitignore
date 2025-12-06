@@ -171,6 +171,9 @@ temp/
 .branches
 .temp
 
+# SSL Certificates - CA certificates are safe to commit
+# supabase-ca.crt
+
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
