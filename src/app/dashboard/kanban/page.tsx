@@ -121,7 +121,7 @@ export default function KanbanPage() {
         .from('tasks')
         .select(`
           *,
-          labels:task_label_links!inner(
+          labels:task_label_links(
             task_labels(*)
           )
         `)
@@ -253,7 +253,7 @@ export default function KanbanPage() {
         .from('tasks')
         .select(`
           *,
-          labels:task_label_links!inner(
+          labels:task_label_links(
             task_labels(*)
           )
         `)
