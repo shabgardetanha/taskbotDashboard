@@ -1,5 +1,5 @@
 <!-- canonical: true -->
-<!-- version: 2025-12-06-v4 -->
+<!-- version: 2025-12-06-v5 -->
 
 # TASKBOT_GUARDIAN.md — Golden Canonical Reference for TaskBot Dashboard (Final Version — December 2025)
 
@@ -90,6 +90,10 @@ Always return 200 OK first; then execute long operations in background.
 Each PR with logical change or new feature: minimum 2 new tests.
 
 npm run build and npm run test must pass 100%.
+
+Database Query Validation: All database queries must include regression tests for INNER JOIN vs LEFT JOIN bugs. Query changes require validation tests.
+
+Auto Setup Scripts: Projects must include automated setup scripts (scripts/auto_setup.js) for complete environment initialization with real data.
 
 ### 10) PR Performance Report (Required)
 Each PR must fill the table below in description; absence or deterioration of metrics = block:
@@ -218,16 +222,25 @@ policy_meta:
         - check_stale_times
         - check_indexes
         - prompt_injection_check
-        - run_full_45_tests          # New — Mandatory (includes 4 database & dashboard tests)
-        - validate_test_report_table # Checks if 45-test table is filled
+        - validate_auto_setup_scripts     # New — Checks for scripts/auto_setup.js
+        - validate_real_data_population  # New — Checks for scripts/populate_real_data.js
+        - run_full_45_tests              # Mandatory (includes 4 database & dashboard tests)
+        - validate_test_report_table     # Checks if 45-test table is filled
+        - validate_database_query_tests  # New — Checks for INNER JOIN regression tests
   prompt_injection_message: "Prompt injection detected. PR blocked."
+  required_scripts:
+    - scripts/auto_setup.js
+    - scripts/populate_real_data.js
+    - scripts/create_missing_tables.js
+    - scripts/run_migration.js
   full_cycle_tests_required: 45
   block_on_test_failure: true
-  canonical_version: "2025-12-06-v4"
+  canonical_version: "2025-12-06-v5"
 ```
 
 ## Changelog
 
+- v2025-12-06-v5 — Added auto setup scripts requirement, real data population validation, database query regression testing, and complete placeholder elimination rules.
 - v2025-12-06-v4 — Added dashboard integration testing category + updated to 45 complete tests + task loading error detection tests.
 - v2025-12-06-v3 — Added 3 mandatory database testing categories (Database Connection, CRUD, Integration Testing) + updated to 44 complete tests + CI machine readable for database tests.
 - v2025-12-05-v2 — Added complete 41 mandatory tests section + CI machine readable + PR test report table + automatic block on any test failure.
