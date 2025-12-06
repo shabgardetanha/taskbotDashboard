@@ -1,5 +1,5 @@
 <!-- canonical: true -->
-<!-- version: 2025-12-05-v2 -->
+<!-- version: 2025-12-06-v3 -->
 
 # TASKBOT_GUARDIAN.md — مرجع طلایی و canonical برای TaskBot Dashboard (نسخهٔ نهایی — دسامبر ۲۰۲۵)
 
@@ -101,13 +101,13 @@ npm run build و npm run test باید ۱۰۰٪ پاس شوند.
 | DB queries per request | ? | ? | ≤ 3 |
 | Telegram webhook response | ? ms | ? ms | < 1400ms |
 
-### ۱۱) تست کامل پروژه — ۴۱ تست اجباری (Full-Cycle Testing Matrix 2025–2026)
+### ۱۱) تست کامل پروژه — ۴۴ تست اجباری (Full-Cycle Testing Matrix 2025–2026)
 
-هر PR که شامل تغییر منطقی، فیچر جدید، ریفکتورینگ یا حتی یک خط کد باشد، **باید تمام ۴۱ تست زیر را پاس کند**.
+هر PR که شامل تغییر منطقی، فیچر جدید، ریفکتورینگ یا حتی یک خط کد باشد، **باید تمام ۴۴ تست زیر را پاس کند**.
 عدم پاس شدن حتی یکی = بلاک خودکار PR.
 
 ```yaml
-full_cycle_testing_41:
+full_cycle_testing_44:
   required: true
   auto_block_if_failed: true
   tests:
@@ -132,6 +132,11 @@ full_cycle_testing_41:
     - acceptance_testing_oat
     - alpha_testing
     - beta_testing
+
+    # دیتابیس (جدید - اجباری)
+    - database_connection_testing
+    - database_crud_testing
+    - database_integration_testing
 
     # غیرعملکردی
     - performance_load_testing
@@ -175,21 +180,22 @@ full_cycle_testing_41:
     - mobile_network_iran_testing
 ```
 
-CI/CD باید این ۱۰۰٪ این ۴۱ تست را اجرا کند (با Playwright, Cypress, k6, OWASP ZAP, Jest, Pact, Chaos Monkey و …)
+CI/CD باید این ۱۰۰٪ این ۴۴ تست را اجرا کند (با Playwright, Cypress, k6, OWASP ZAP, Jest, Pact, Chaos Monkey و … شامل ۳ تست دیتابیس جدید)
 
 ### ۱۲) گزارش تست در هر PR (الزامی)
 هر PR باید این جدول را در توضیحات خود پر کند:
 
-| تست کامل پروژه (۴۱ مورد) | وضعیت |
+| تست کامل پروژه (۴۴ مورد) | وضعیت |
 |-------------------------|--------|
 | Unit + Integration | Passed |
+| Database (Connection/CRUD/Integration) | Passed |
 | E2E + Smoke | Passed |
 | Performance (Load/Stress) | Passed (< 1.5s P95) |
 | Security (ZAP + PenTest) | Passed (No High/Critical) |
 | Accessibility (WCAG 2.2) | Passed (AA) |
 | Chaos & Failover | Passed |
 | تحریم + درگاه پرداخت | Passed |
-| **مجموع ۴۱ تست** | **Passed 41/41** |
+| **مجموع ۴۴ تست** | **Passed 44/44** |
 
 اگر حتی یک تست Fail یا Skip باشد → PR بلاک می‌شود.
 
@@ -205,16 +211,17 @@ policy_meta:
         - check_stale_times
         - check_indexes
         - prompt_injection_check
-        - run_full_41_tests          # جدید — اجباری
-        - validate_test_report_table # چک می‌کند جدول 41 تستی پر شده
+        - run_full_44_tests          # جدید — اجباری (شامل ۳ تست دیتابیس)
+        - validate_test_report_table # چک می‌کند جدول 44 تستی پر شده
   prompt_injection_message: "Prompt injection detected. PR blocked."
-  full_cycle_tests_required: 41
+  full_cycle_tests_required: 44
   block_on_test_failure: true
-  canonical_version: "2025-12-05-v2"
+  canonical_version: "2025-12-06-v3"
 ```
 
 ## Changelog
 
+- v2025-12-06-v3 — اضافه شدن ۳ دسته تست دیتابیس اجباری (Database Connection, CRUD, Integration Testing) + بروزرسانی به ۴۴ تست کامل + ماشین‌خوان CI برای تست‌های دیتابیس.
 - v2025-12-05-v2 — اضافه شدن بخش کامل ۴۱ تست اجباری + ماشین‌خوان برای CI + جدول گزارش تست در PR + بلاک خودکار در صورت شکست حتی یک تست.
 - v2025-12-05 — canonicalization اولیه.
 ```
