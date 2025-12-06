@@ -89,7 +89,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
       if (error) throw error
 
-      const workspacesWithCount = workspacesData?.map(workspace => ({
+      const workspacesWithCount = workspacesData?.map((workspace: any) => ({
         ...workspace,
         member_count: Array.isArray(workspace.workspace_members)
           ? workspace.workspace_members.length

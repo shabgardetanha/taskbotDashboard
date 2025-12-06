@@ -66,35 +66,35 @@ export default function AnalyticsPage() {
       }
 
       const totalTasks = allTasks.length
-      const completedTasks = allTasks.filter(t => t.status === 'done').length
-      const overdueTasks = allTasks.filter(t =>
+      const completedTasks = allTasks.filter((t: any) => t.status === 'done').length
+      const overdueTasks = allTasks.filter((t: any) =>
         t.due_date &&
         new Date(t.due_date) < new Date() &&
         t.status !== 'done'
       ).length
-      const inProgressTasks = allTasks.filter(t => t.status === 'inprogress').length
+      const inProgressTasks = allTasks.filter((t: any) => t.status === 'inprogress').length
 
       const tasksByPriority = {
-        urgent: allTasks.filter(t => t.priority === 'urgent').length,
-        high: allTasks.filter(t => t.priority === 'high').length,
-        medium: allTasks.filter(t => t.priority === 'medium').length,
-        low: allTasks.filter(t => t.priority === 'low').length,
+        urgent: allTasks.filter((t: any) => t.priority === 'urgent').length,
+        high: allTasks.filter((t: any) => t.priority === 'high').length,
+        medium: allTasks.filter((t: any) => t.priority === 'medium').length,
+        low: allTasks.filter((t: any) => t.priority === 'low').length,
       }
 
       const tasksByStatus = {
-        todo: allTasks.filter(t => t.status === 'todo').length,
-        inprogress: allTasks.filter(t => t.status === 'inprogress').length,
-        done: allTasks.filter(t => t.status === 'done').length,
+        todo: allTasks.filter((t: any) => t.status === 'todo').length,
+        inprogress: allTasks.filter((t: any) => t.status === 'inprogress').length,
+        done: allTasks.filter((t: any) => t.status === 'done').length,
       }
 
       const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
 
       // Calculate average completion time (simplified)
-      const completedTasksWithDates = allTasks.filter(t =>
+      const completedTasksWithDates = allTasks.filter((t: any) =>
         t.status === 'done' && t.created_at && t.updated_at
       )
       const averageCompletionTime = completedTasksWithDates.length > 0
-        ? completedTasksWithDates.reduce((acc, task) => {
+        ? completedTasksWithDates.reduce((acc: number, task: any) => {
             const created = new Date(task.created_at).getTime()
             const updated = new Date(task.updated_at).getTime()
             return acc + (updated - created)
@@ -103,16 +103,16 @@ export default function AnalyticsPage() {
 
       // Today's stats
       const today = new Date().toISOString().split('T')[0] || ''
-      const tasksCreatedToday = allTasks.filter(t =>
+      const tasksCreatedToday = allTasks.filter((t: any) =>
         t.created_at && t.created_at.startsWith(today)
       ).length
-      const tasksDueToday = allTasks.filter(t =>
+      const tasksDueToday = allTasks.filter((t: any) =>
         t.due_date === today
       ).length
 
       // This week's stats
       const weekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] || ''
-      const tasksDueThisWeek = allTasks.filter(t =>
+      const tasksDueThisWeek = allTasks.filter((t: any) =>
         t.due_date && t.due_date >= today && t.due_date <= weekFromNow
       ).length
 
@@ -138,7 +138,7 @@ export default function AnalyticsPage() {
         .order('created_at', { ascending: false })
         .limit(5)
 
-      const recentActivity = (recentLogs || []).map(log => ({
+      const recentActivity = (recentLogs || []).map((log: any) => ({
         id: log.id,
         action: log.action,
         task_title: log.task_title || 'وظیفه',

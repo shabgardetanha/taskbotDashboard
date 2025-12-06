@@ -134,7 +134,7 @@ export default function SearchPage() {
       // Post-filter for labels if needed
       let filteredTasks = data || []
       if (filters.labels.length > 0) {
-        filteredTasks = filteredTasks.filter(task =>
+        filteredTasks = filteredTasks.filter((task: any) =>
           task.labels?.some((labelLink: any) =>
             filters.labels.includes(labelLink.label?.id)
           )
