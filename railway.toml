@@ -7,3 +7,7 @@ disable = true
 
 [deploy]
 startCommand = "npm start"
+
+# SSL Certificate Configuration
+# supabase-ca.crt is automatically available since it's committed to git
+# Railway deploys from git, so all committed files are available at runtime
