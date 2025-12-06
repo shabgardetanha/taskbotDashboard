@@ -73,8 +73,20 @@ const getSupabaseClient = (): any => {
 // Export functions that create clients on demand
 export const createSupabaseClient = () => createClientInstance()
 
-// Default client instance - lazy loaded
-export const supabase = getSupabaseClient()
+// Default client instance - truly lazy loaded (only created when accessed)
+export const supabase = (() => {
+  let instance: any = null
+  return new Proxy({}, {
+    get(target, prop) {
+      if (!instance) {
+        console.log('🚀 Creating Supabase client instance on first access')
+        instance = createClientInstance()
+        console.log('✅ Supabase client created successfully')
+      }
+      return instance[prop]
+    }
+  })
+})()
 
 // Utility functions for safer database operations
 export const withSupabaseClient = async <T>(
